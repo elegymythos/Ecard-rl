@@ -1,0 +1,53 @@
+# ===== Python 缓存与编译产物 =====
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+build/
+dist/
+
+# ===== 虚拟环境 =====
+.venv/
+venv/
+env/
+ENV/
+
+# ===== 训练产物（大文件/可再生成，不入库） =====
+# 检查点（每 5000 回合覆盖，可恢复续训）
+data/checkpoints/
+# 结果图（训练结束自动生成）
+data/*.png
+# SwanLab 本地运行数据与自动导出的图表/CSV/诊断
+swanlog/
+# 根目录的历史 SwanLab run 目录（旧版本路径）
+run-*/
+# 历史终端日志
+PPO_Opponent_Modeling-*.txt
+*.log
+nohup.out
+
+# ===== 临时分析脚本（点文件） =====
+.csv_analyze*.py
+.ckpt_read*.py
+.verify_*.py
+
+# ===== 打包文件 =====
+*.zip
+*.tar.gz
+
+# ===== 测试与工具缓存 =====
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ===== IDE / 编辑器 =====
+.idea/
+.vscode/
+.qoder/
+*.swp
+*.swo
+
+# ===== 操作系统 =====
+.DS_Store
+Thumbs.db
