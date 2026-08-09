@@ -32,6 +32,7 @@ run-*/                       # 旧版根目录的 SwanLab run 目录
 PPO_Opponent_Modeling-*.txt
 *.log
 nohup.out
+data/
 
 # 注意：data/ 本身不忽略——将来的人类对局原始数据（阶段5）要入库。
 # 原则是「忽略生成物、保留原始数据」，别把整目录一刀切。
