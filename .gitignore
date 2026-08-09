@@ -1,53 +1,57 @@
-# ===== Python 缓存与编译产物 =====
+# ============================================================
+# .gitignore 语法速查
+#   # 注释
+#   __pycache__/            匹配任意层级下名为 __pycache__ 的目录（含子目录）
+#   /dist/                  只匹配仓库根目录下的 dist/（斜杠开头 = 锚定根）
+#   *.pyc                   匹配任意层级的 .pyc 文件
+#   !keep.csv               排除上述规则：keep.csv 照常入库（必须写在覆盖规则之后）
+#   规则从上到下匹配，后写的覆盖先写的
+# ============================================================
+
+# ---- Python 运行时产物（可再生成，一律不入库）----
 __pycache__/
 *.py[cod]
 *.so
 *.egg-info/
 build/
 dist/
+.coverage
+htmlcov/
 
-# ===== 虚拟环境 =====
+# ---- 虚拟环境（本机专属，绝不入库）----
 .venv/
 venv/
 env/
 ENV/
 
-# ===== 训练产物（大文件/可再生成，不入库） =====
-# 检查点（每 5000 回合覆盖，可恢复续训）
-data/checkpoints/
-# 结果图（训练结束自动生成）
-data/*.png
-# SwanLab 本地运行数据与自动导出的图表/CSV/诊断
-swanlog/
-# 根目录的历史 SwanLab run 目录（旧版本路径）
-run-*/
-# 历史终端日志
+# ---- 训练/实验产物（大文件、可再生成）----
+data/checkpoints/            # 检查点：每 5000 回合覆盖，可从 checkpoint 恢复
+data/*.png                   # 训练结束自动导出的结果图
+swanlog/                     # SwanLab 本地运行数据 + 自动图表/CSV/诊断
+run-*/                       # 旧版根目录的 SwanLab run 目录
 PPO_Opponent_Modeling-*.txt
 *.log
 nohup.out
 
-# ===== 临时分析脚本（点文件） =====
-.csv_analyze*.py
-.ckpt_read*.py
-.verify_*.py
+# 注意：data/ 本身不忽略——将来的人类对局原始数据（阶段5）要入库。
+# 原则是「忽略生成物、保留原始数据」，别把整目录一刀切。
 
-# ===== 打包文件 =====
-*.zip
-*.tar.gz
-
-# ===== 测试与工具缓存 =====
+# ---- 测试与工具缓存 ----
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .ipynb_checkpoints/
 
-# ===== IDE / 编辑器 =====
-.idea/
+# ---- 编辑器 / 操作系统（个人习惯，不入库）----
 .vscode/
-.qoder/
+.idea/
 *.swp
 *.swo
-
-# ===== 操作系统 =====
 .DS_Store
 Thumbs.db
+
+# ---- 环境变量 / 密钥（含密码或 token 时）----
+.env
+.env.*
+
+direction.md

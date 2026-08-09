@@ -96,5 +96,9 @@ python ppo.py             # 完整训练（默认 600 万回合，CPU 约 3.5 �
 ## 文件
 
 * `ppo.py` — 当前实现（1758 行，含脚手架；将被最小重写取代）
+* `env.py` — 最小环境（阶段 1 重写）
+* `test_env.py` — 环境规则测试（pytest）
+* `verify_env.py` — 新旧环境一致性验证脚本
 * `readme.md` — 本文件
-* `requirements.txt` — 环境导出（含大量与项目无关的包；安装时剔除 CUDA/nvidia/triton 系）
+* `requirements.txt` — 运行时依赖（直接依赖 + 版本下限；纯 CPU torch 安装方式见文件内注释）
+* `requirements-dev.txt` — 开发依赖（pytest）
