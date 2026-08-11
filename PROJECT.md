@@ -63,7 +63,7 @@ python solver.py                       # 阶段 2 验证门
 python train.py --quick                # 阶段 3 冒烟
 python train.py --steps 200000         # 阶段 3 短跑
 python sweep.py --demo                 # 阶段 4 冒烟（3 次运行）
-python sweep.py --steps 40000          # 阶段 4 正式网格（75 次运行，CPU 约 1-2 小时）
+python sweep.py --steps 40000          # 阶段 4 正式网格（60 次运行，CPU 约 25 分钟）
 ```
 
 ## 实验纪律

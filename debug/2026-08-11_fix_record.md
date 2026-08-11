@@ -45,3 +45,5 @@ run01（60 次自博弈扫描）数据分析发现 8 个运行/训练逻辑问�
 - 修改：`utility.py`、`ppo.py`、`sweep.py`、`train.py`
 - 数据：`data/runs/run01/`（修复前基线，含 run_manifest.json）
 - 当前 git HEAD：`33e7fe3`（建议修复后单独 commit）
+
+> 后续（run02 分析）：发现 τ=0.1 是权重函数退化造成的伪信号，修复见 `debug/2026-08-11_run02_remediation.md`。

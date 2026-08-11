@@ -44,8 +44,18 @@ def make_prospect(alpha: float = 0.88, beta: float = 0.88,
     注意：窗口频率由 agent 当前策略自己造成，形成反馈环；要隔离它，
     用 use_weighting="ref"——固定参考概率 ref_prob（默认 0.2 = 均衡胜率），
     乘子 = w(p_ref)/p_ref 或 w(1-p_ref)/(1-p_ref)，与策略无关。
+
+    gamma 范围：T&K 单参数权重函数在 γ<~0.3 时退化——典型概率下 w(p)≈0，
+    奖励信号被抹平（run02 实测 γ=0.1：+5 的主观值只剩 +1.11，subj_std≈0.01）。
+    因此启用概率权重时强制 γ ∈ [0.5, 1.0]；要更小的 γ，请换 Prelec 双参数函数。
     """
     mode = "window" if use_weighting is True else (use_weighting or False)
+    if mode and not (0.5 <= gamma <= 1.0):
+        raise ValueError(
+            f"gamma={gamma} 会让 T&K 单参数权重函数退化（γ<0.5 时小概率被低权、"
+            f"γ=0.1 时 w(p)≈0）。启用概率权重时请用 [0.5, 1.0]，"
+            f"或改用 Prelec 双参数权重函数。"
+        )
     history = deque(maxlen=window) if mode == "window" else None
 
     def utility(reward, context=None):

@@ -1,6 +1,8 @@
 """阶段 4：心理参数扫描（初版，AI 写，待你重写）。
 
-网格：λ ∈ {1, 2, 3, 5} × τ ∈ {0.1, 0.5, 1.0} × 5 seeds = 60 次自博弈训练。
+网格：λ ∈ {1, 2, 3, 5} × τ ∈ {0.5, 0.75, 1.0} × 5 seeds = 60 次自博弈训练。
+- τ 取 0.5/0.75/1.0，不用 0.1：T&K 单参数权重函数在 γ<~0.3 退化（w(p)≈0，
+  奖励信号被抹平，熵正则主导——run02 的 τ=0.1 列就是这样被污染的）。
 - 皇帝效用：prospect(λ)，α=β=0.88，无概率权重——隔离损失厌恶效应；
 - 奴隶效用：prospect(τ)，γ=τ，λ=1，滑动窗口概率权重——隔离概率扭曲效应；
 - 每个配置记录：首轮 p̂、q̂、皇帝胜率、客观期望、主观效用均值、末段漂移。
@@ -31,7 +33,7 @@ from ppo import Agent, collect_rollout, first_round_stats, update_policy
 from utility import make_prospect
 
 LAMBDAS = [1.0, 2.0, 3.0, 5.0]
-TAUS = [0.1, 0.5, 1.0]
+TAUS = [0.5, 0.75, 1.0]  # 修：0.1 已废弃，权重函数在 γ<0.5 退化
 SEEDS = [42, 43, 44, 45, 46]
 
 PREDICTIONS = {
@@ -59,7 +61,7 @@ def _window_stats(series: list[float], tail: float = 0.2) -> tuple[float, float]
 def run_config(lam: float, tau: float, seed: int, *, steps: int,
                rollout: int, epochs: int, batch: int, lr: float,
                ent_coef: float, ret_norm: bool, min_ent: float,
-               weight_mode: str) -> dict:
+               weight_mode: str, conv_tol: float) -> dict:
     """单格子单 seed 的自博弈训练，返回最终指标。"""
     t0 = time.time()
     torch.manual_seed(seed)
@@ -102,6 +104,8 @@ def run_config(lam: float, tau: float, seed: int, *, steps: int,
     ent_s_mean, _ = _window_stats(hist["ent_s"])
     subj_std_e_mean, _ = _window_stats(hist["subj_std_e"])
     subj_std_s_mean, _ = _window_stats(hist["subj_std_s"])
+    drift_p = _drift(hist["p"])
+    drift_q = _drift(hist["q"])
     return {
         "lambda": lam, "tau": tau, "seed": seed,
         "final_p": hist["p"][-1], "final_q": hist["q"][-1],  # 与 run01 兼容的旧字段
@@ -109,7 +113,8 @@ def run_config(lam: float, tau: float, seed: int, *, steps: int,
         "win_rate": win_mean, "obj_return": ret_mean, "obj_return_std": ret_std,
         "ent_e_init": ent_e_mean, "ent_s_init": ent_s_mean,
         "subj_std": {"emperor": subj_std_e_mean, "slave": subj_std_s_mean},
-        "drift_p": _drift(hist["p"]), "drift_q": _drift(hist["q"]),
+        "drift_p": drift_p, "drift_q": drift_q,
+        "converged": abs(drift_p) < conv_tol and abs(drift_q) < conv_tol,
         "elapsed_s": round(time.time() - t0, 2),
         "p_series": hist["p"], "q_series": hist["q"],  # 完整序列进 runs.jsonl
     }
@@ -155,6 +160,16 @@ def _file_sha(path: Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()[:12]
 
 
+def _git_dirty() -> bool:
+    """工作区是否有未提交改动（写进 meta，防止 run 的版本对不上）。"""
+    try:
+        out = subprocess.run(["git", "status", "--porcelain"], capture_output=True,
+                             text=True, check=True).stdout.strip()
+        return bool(out)
+    except Exception:
+        return True  # 拿不到 git 状态就按「不确定」处理
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--demo", action="store_true", help="冒烟：少量格子 × 1 seed")
@@ -171,6 +186,8 @@ def main():
                     help="优势+回报标准化（心理运行奖励尺度大时的稳定性开关）")
     ap.add_argument("--weight-mode", choices=["window", "ref", "off"], default="window",
                     help="奴隶概率权重：window=滑动窗口（策略反馈环）/ ref=固定参考概率 / off=无")
+    ap.add_argument("--conv-tol", type=float, default=0.05,
+                    help="收敛门：|末段漂移| 低于此值才算站住")
     args = ap.parse_args()
 
     sweep_dir = Path("data/sweep")
@@ -197,7 +214,8 @@ def main():
                 rec = run_config(lam, tau, seed, steps=args.steps, rollout=args.rollout,
                                  epochs=args.epochs, batch=args.batch, lr=args.lr,
                                  ent_coef=args.ent_coef, ret_norm=args.ret_norm,
-                                 min_ent=args.min_ent, weight_mode=args.weight_mode)
+                                 min_ent=args.min_ent, weight_mode=args.weight_mode,
+                                 conv_tol=args.conv_tol)
                 rec_log = {k: v for k, v in rec.items()
                            if k not in ("p_series", "q_series")}
                 runs.append(rec_log)
@@ -261,6 +279,8 @@ def main():
             "adv_norm": False,
             "weight_mode": args.weight_mode,
             "weight_ref_prob": 0.2,
+            "conv_tol": args.conv_tol,
+            "git_dirty": _git_dirty(),
             "seeds": seeds,
             "started_at": started_at,
             "git_commit": _git_head(),
@@ -299,12 +319,16 @@ def main():
         },
         "cells": cells,
         "runs": runs,
+        "n_converged": sum(1 for r in runs if r.get("converged")),
         "elapsed_s": round(time.time() - t0, 1),
     }
     grid_text = json.dumps(summary, ensure_ascii=False, indent=2)
     (out_dir / "grid.json").write_text(grid_text, encoding="utf-8")
     if out_dir != sweep_dir:
         (sweep_dir / "grid.json").write_text(grid_text, encoding="utf-8")
+    print(f"收敛门（tol={args.conv_tol}）：{summary['n_converged']}/{len(runs)} 次运行站住")
+    if summary["n_converged"] == 0:
+        print("警告：没有任何运行在容差内收敛——结果只是有限预算快照，不是均衡。")
 
     png = out_dir / "phase_diagram.png"
     if len(cells) >= 4:
