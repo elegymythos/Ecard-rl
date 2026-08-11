@@ -77,8 +77,13 @@ class Buffer:
     def __len__(self):
         return len(self.rewards)
 
-    def get(self, gamma: float, lam: float, adv_norm: bool):
-        """返回 (states, actions, old_logps, advantages, returns)。"""
+    def get(self, gamma: float, lam: float, adv_norm: bool, ret_norm: bool = False):
+        """返回 (states, actions, old_logps, advantages, returns)。
+
+        adv_norm：只标准化优势（旧结果的可疑元凶，identity 研究默认关）。
+        ret_norm：优势+回报一起标准化——心理运行的奖励尺度可能差一个数量级
+        （τ=0.1 时主观奖励可达 ±100），这是独立于 adv_norm 的稳定性开关。
+        """
         states = torch.as_tensor(np.stack(self.states), dtype=torch.float32)
         actions = torch.as_tensor(np.array(self.actions), dtype=torch.long)
         old_logps = torch.as_tensor(np.array(self.logps), dtype=torch.float32)
@@ -99,8 +104,10 @@ class Buffer:
         adv_t = torch.as_tensor(adv, dtype=torch.float32)
         if adv_norm:  # 默认关：它抹掉 +1/-5 的绝对尺度，是旧结果的可疑元凶
             adv_t = (adv_t - adv_t.mean()) / (adv_t.std() + 1e-8)
-        return (states, actions, old_logps, adv_t,
-                torch.as_tensor(returns, dtype=torch.float32))
+        returns_t = torch.as_tensor(returns, dtype=torch.float32)
+        if ret_norm:
+            returns_t = (returns_t - returns_t.mean()) / (returns_t.std() + 1e-8)
+        return (states, actions, old_logps, adv_t, returns_t)
 
 
 def _mask(legal_actions: list[int]) -> torch.Tensor:
@@ -120,6 +127,7 @@ def collect_rollout(env, agents, utilities, steps, gamma, lam):
     streak = {"emperor": 0, "slave": 0}
     ep_returns = {"emperor": 0.0, "slave": 0.0}
     subj_sums = {"emperor": 0.0, "slave": 0.0}
+    subj_sumsq = {"emperor": 0.0, "slave": 0.0}
     obj_returns: list[float] = []
     wins = 0
     episodes = 0
@@ -144,6 +152,8 @@ def collect_rollout(env, agents, utilities, steps, gamma, lam):
 
         subj_sums["emperor"] += r_e
         subj_sums["slave"] += r_s
+        subj_sumsq["emperor"] += r_e * r_e
+        subj_sumsq["slave"] += r_s * r_s
         ep_returns["emperor"] += r_obj
         ep_returns["slave"] += -r_obj
         # 连败计数：平局不算连败（先按本回合前的 streak 给 context，再更新）
@@ -164,14 +174,18 @@ def collect_rollout(env, agents, utilities, steps, gamma, lam):
         "emperor_win_rate": wins / episodes if episodes else float("nan"),
         "emperor_obj_return": float(np.mean(obj_returns)) if obj_returns else float("nan"),
         "subj_mean": {k: subj_sums[k] / steps for k in subj_sums},
+        "subj_std": {
+            k: float(np.sqrt(max(0.0, subj_sumsq[k] / steps - (subj_sums[k] / steps) ** 2)))
+            for k in subj_sums
+        },
     }
     return buffers, stats
 
 
 def update_policy(agent, optimizer, buffer, *, gamma, lam, clip_eps, ent_coef,
-                  adv_norm, epochs, batch_size):
+                  adv_norm, epochs, batch_size, ret_norm=False, min_ent=0.0):
     """对单个 agent 做 PPO 更新。返回 (policy_loss, value_loss, entropy)。"""
-    states, actions, old_logps, adv, returns = buffer.get(gamma, lam, adv_norm)
+    states, actions, old_logps, adv, returns = buffer.get(gamma, lam, adv_norm, ret_norm)
     n = len(states)
     for _ in range(epochs):
         perm = torch.randperm(n)
@@ -187,6 +201,8 @@ def update_policy(agent, optimizer, buffer, *, gamma, lam, clip_eps, ent_coef,
             entropy = dist.entropy().mean()
             value_loss = F.mse_loss(values.squeeze(-1), returns[idx])
             loss = policy_loss + 0.5 * value_loss - ent_coef * entropy
+            if min_ent > 0.0:  # 最小熵约束：防策略塌缩成「永不出王牌」
+                loss = loss + F.relu(min_ent - entropy)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -196,8 +212,25 @@ def update_policy(agent, optimizer, buffer, *, gamma, lam, clip_eps, ent_coef,
 @torch.no_grad()
 def first_round_probs(agents):
     """初始状态下皇帝/奴隶出王牌的概率（阶段 3 验证门的主角 p̂、q̂）。"""
+    p, q, _, _ = first_round_stats(agents)
+    return p, q
+
+
+@torch.no_grad()
+def first_round_stats(agents):
+    """初始状态策略统计：(p, q, 皇帝策略熵, 奴隶策略熵)。
+
+    熵用来测「τ↑ → 策略逼近均匀随机」：均匀随机时熵 = ln2 ≈ 0.6931。
+    """
     obs = ECardEnv().reset()
     mask = _mask([0, 1])
-    _, _, _, probs_e = agents["emperor"].act(obs, mask)
-    _, _, _, probs_s = agents["slave"].act(obs, mask)
-    return float(probs_e[PLAY_ACE]), float(probs_s[PLAY_ACE])
+    obs_t = torch.as_tensor(obs, dtype=torch.float32).unsqueeze(0)
+    ent = {}
+    probs = {}
+    for name in agents:
+        logits, _ = agents[name](obs_t)
+        dist = Categorical(logits=logits + mask)
+        probs[name] = dist.probs.squeeze(0).numpy()
+        ent[name] = float(dist.entropy().item())
+    return (float(probs["emperor"][PLAY_ACE]), float(probs["slave"][PLAY_ACE]),
+            ent["emperor"], ent["slave"])

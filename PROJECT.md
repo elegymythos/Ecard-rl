@@ -50,6 +50,7 @@
 | ppo.py | PPO 核心：actor-critic 64 维、GAE、clip、熵正则，双 agent |
 | train.py | 训练入口：identity 冒烟/短跑，双日志，验证门输出 |
 | sweep.py | 阶段 4：λ×τ 网格扫描 + 预测核验 + 相图 |
+| debug/ | 修复记录与调试日志（2026-08-11 起） |
 | data/ | 实验结果：stage3_*.json、sweep/（grid.json、predictions.json、phase_diagram.png） |
 | readme.md | 旧实现基线（历史记录，不是真相） |
 

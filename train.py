@@ -102,7 +102,7 @@ def main():
 
     out = Path("data") / f"stage3_{args.utility}_seed{args.seed}_advnorm{int(args.adv_norm)}.json"
     out.parent.mkdir(exist_ok=True)
-    out.write_text(json.dumps(summary, ensure_ascii=False, indent=2))
+    out.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"  已存 {out}")
 
 
