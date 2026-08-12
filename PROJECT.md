@@ -33,9 +33,9 @@
 | 1 | env.py + test_env.py | ✅ 完成（8/8 测试通过） |
 | 2 | solver.py | ✅ 完成（欠账：AI 写的，待凭记忆重写） |
 | 3 | utility.py + ppo.py + train.py | 🟡 初版完成（AI 写，待你重写） |
-| 4 | sweep.py + (λ, τ) 相图 | 🟡 初版完成（AI 写，待你重写） |
+| 4 | sweep.py + (λ, τ) 相图 | 🟡 run03 完成，待收敛探测 |
 | 5 | 人类对局数据 | ⬜ 待做 |
-| 6 | results.md | ⬜ 待做 |
+| 6 | results.md | 🟡 草稿已建（2026-08-13） |
 
 ## 文件地图
 
@@ -52,6 +52,7 @@
 | sweep.py | 阶段 4：λ×τ 网格扫描 + 预测核验 + 相图 |
 | debug/ | 修复记录与调试日志（2026-08-11 起） |
 | data/ | 实验结果：stage3_*.json、sweep/（grid.json、predictions.json、phase_diagram.png） |
+| results.md | 阶段 6 结果草稿：预测核验、证据边界、下一步 |
 | readme.md | 旧实现基线（历史记录，不是真相） |
 
 ## 运行

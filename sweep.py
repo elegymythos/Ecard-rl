@@ -157,7 +157,10 @@ def _git_head() -> str | None:
 
 
 def _file_sha(path: Path) -> str:
-    return hashlib.sha256(Path(path).read_bytes()).hexdigest()[:12]
+    # 归一化换行再算哈希：git autocrlf 会把工作区文件转成 CRLF，
+    # 直接按原始字节算哈希会导致跨平台对不上（run02/run03 已踩过）。
+    data = Path(path).read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(data).hexdigest()[:12]
 
 
 def _git_dirty() -> bool:
@@ -188,6 +191,9 @@ def main():
                     help="奴隶概率权重：window=滑动窗口（策略反馈环）/ ref=固定参考概率 / off=无")
     ap.add_argument("--conv-tol", type=float, default=0.05,
                     help="收敛门：|末段漂移| 低于此值才算站住")
+    ap.add_argument("--cells", default=None,
+                    help="只跑指定格子，如 '1-0.5,5-1.0'（λ-τ 对，逗号分隔）")
+    ap.add_argument("--seeds", default=None, help="只跑指定种子，如 '42,43'")
     args = ap.parse_args()
 
     sweep_dir = Path("data/sweep")
@@ -200,30 +206,37 @@ def main():
         (sweep_dir / "predictions.json").write_text(predictions_text, encoding="utf-8")
 
     lambdas, taus, seeds = LAMBDAS, TAUS, SEEDS
-    if args.demo:
+    if args.cells:
+        grid_pairs = [(float(a), float(b)) for pair in args.cells.split(",")
+                      for a, b in [pair.split("-")]]
+    else:
+        grid_pairs = [(l, t) for l in lambdas for t in taus]
+    if args.seeds:
+        seeds = [int(s) for s in args.seeds.split(",")]
+    if args.demo and not args.cells:
         lambdas, taus, seeds = [1.0, 3.0, 5.0], [0.5], [42]
+        grid_pairs = [(l, t) for l in lambdas for t in taus]
         args.steps = min(args.steps, 8192)  # 冒烟只验管道，不做结论
 
     started_at = datetime.now().isoformat(timespec="seconds")
     runs = []
     runs_jsonl = out_dir / "runs.jsonl"
     t0 = time.time()
-    for lam in lambdas:
-        for tau in taus:
-            for seed in seeds:
-                rec = run_config(lam, tau, seed, steps=args.steps, rollout=args.rollout,
-                                 epochs=args.epochs, batch=args.batch, lr=args.lr,
-                                 ent_coef=args.ent_coef, ret_norm=args.ret_norm,
-                                 min_ent=args.min_ent, weight_mode=args.weight_mode,
-                                 conv_tol=args.conv_tol)
-                rec_log = {k: v for k, v in rec.items()
-                           if k not in ("p_series", "q_series")}
-                runs.append(rec_log)
-                with runs_jsonl.open("a", encoding="utf-8") as f:  # 每跑完一条立即落盘
-                    f.write(json.dumps(rec, ensure_ascii=False) + "\n")
-                print(f"λ={lam:g} τ={tau:g} seed={seed} | p={rec['p']:.3f}±{rec['p_std']:.3f} "
-                      f"q={rec['q']:.3f}±{rec['q_std']:.3f} win={rec['win_rate']:.3f} "
-                      f"ret={rec['obj_return']:+.3f}")
+    for lam, tau in grid_pairs:
+        for seed in seeds:
+            rec = run_config(lam, tau, seed, steps=args.steps, rollout=args.rollout,
+                             epochs=args.epochs, batch=args.batch, lr=args.lr,
+                             ent_coef=args.ent_coef, ret_norm=args.ret_norm,
+                             min_ent=args.min_ent, weight_mode=args.weight_mode,
+                             conv_tol=args.conv_tol)
+            rec_log = {k: v for k, v in rec.items()
+                       if k not in ("p_series", "q_series")}
+            runs.append(rec_log)
+            with runs_jsonl.open("a", encoding="utf-8") as f:  # 每跑完一条立即落盘
+                f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+            print(f"λ={lam:g} τ={tau:g} seed={seed} | p={rec['p']:.3f}±{rec['p_std']:.3f} "
+                  f"q={rec['q']:.3f}±{rec['q_std']:.3f} win={rec['win_rate']:.3f} "
+                  f"ret={rec['obj_return']:+.3f}")
 
     grouped: dict[tuple[float, float], list[dict]] = {}
     for r in runs:
