@@ -24,18 +24,22 @@ venv/
 env/
 ENV/
 
-# ---- 训练/实验产物（大文件、可再生成）----
-data/checkpoints/            # 检查点：每 5000 回合覆盖，可从 checkpoint 恢复
-data/*.png                   # 训练结束自动导出的结果图
-swanlog/                     # SwanLab 本地运行数据 + 自动图表/CSV/诊断
-run-*/                       # 旧版根目录的 SwanLab run 目录
+# ---- 训练/实验产物（大文件、可再生成，一律不入库）----
+# 注意：gitignore 不支持行内注释，注释必须独占一行。
+data/checkpoints/
+data/*.png
+data/runs/
+data/sweep/
+data/stage3_*.json
+swanlog/
+run-*/
 PPO_Opponent_Modeling-*.txt
 *.log
 nohup.out
-data/
 
-# 注意：data/ 本身不忽略——将来的人类对局原始数据（阶段5）要入库。
-# 原则是「忽略生成物、保留原始数据」，别把整目录一刀切。
+# 注意：data/ 根目录本身不忽略——将来的人类对局原始数据（阶段5）要入库。
+# 原则是「忽略生成物、保留原始数据」：只列可再生成的产物目录/文件，
+# 不整目录一刀切（data/ 下新增的原始数据默认可入库）。
 
 # ---- 测试与工具缓存 ----
 .pytest_cache/
@@ -54,6 +58,3 @@ Thumbs.db
 # ---- 环境变量 / 密钥（含密码或 token 时）----
 .env
 .env.*
-
-direction.md
-Question.md

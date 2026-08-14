@@ -7,6 +7,8 @@ context 由 train.py 传入，至少包含 streak_losses（该 agent 当前连�
 阶段 4 扫描会用到 prospect 的概率权重（use_weighting=True）。
 心理只在这里，不污染 env.py。
 """
+from __future__ import annotations
+
 from collections import deque
 
 

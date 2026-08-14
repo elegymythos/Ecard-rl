@@ -87,15 +87,21 @@
 
 ## 运行
 
+> 本 README 记录的是旧实现基线；ppo.py 已重写（1758 行 → 236 行），
+> 旧命令 `python ppo.py --quick` 已失效。当前入口见 PROJECT.md：
+
 ```bash
 conda activate torch_env
-python ppo.py --quick     # 自检（18/18 通过）
-python ppo.py             # 完整训练（默认 600 万回合，CPU 约 3.5 小时）
+python -m pytest test_env.py -q        # 阶段 1 验证门（8/8）
+python solver.py                       # 阶段 2 验证门
+python train.py --quick                # 阶段 3 冒烟
+python train.py --steps 200000         # 阶段 3 短跑
+python sweep.py --demo                 # 阶段 4 冒烟（3 次运行）
 ```
 
 ## 文件
 
-* `ppo.py` — 当前实现（1758 行，含脚手架；将被最小重写取代）
+* `ppo.py` — 旧实现（1758 行，含脚手架；已由阶段 3 的 236 行版本取代，见 PROJECT.md）
 * `env.py` — 最小环境（阶段 1 重写）
 * `test_env.py` — 环境规则测试（pytest）
 * `verify_env.py` — 新旧环境一致性验证脚本

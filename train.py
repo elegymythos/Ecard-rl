@@ -40,6 +40,15 @@ def window_drift(series: list[float], tail: float = 0.2) -> float:
     return float(np.mean(series[-cut:]) - np.mean(series[:-cut]))
 
 
+def _window_stats(series: list[float], tail: float = 0.2) -> tuple[float, float]:
+    """末段窗口均值与标准差（修：最终指标不用单点快照，与 sweep.py 口径一致）。"""
+    if not series:
+        return float("nan"), float("nan")
+    cut = min(len(series), max(2, int(len(series) * tail))) if len(series) >= 2 else 1
+    window = series[-cut:]
+    return float(np.mean(window)), float(np.std(window))
+
+
 def main():
     args = parse_args()
     if args.quick:
@@ -75,28 +84,37 @@ def main():
                   f"| p={p:.3f} q={q:.3f} "
                   f"| subj E/S={stats['subj_mean']['emperor']:+.3f}/{stats['subj_mean']['slave']:+.3f}")
 
-    p, q = history["p"][-1], history["q"][-1]
+    # 修：最终指标取末段窗口均值（与 sweep.py 一致）；final_p/final_q 保留为
+    # 单点快照，兼容旧 stage3 JSON 的字段。
+    p, p_std = _window_stats(history["p"])
+    q, q_std = _window_stats(history["q"])
+    win_rate, _ = _window_stats(history["win_rate"])
+    obj_return, _ = _window_stats(history["obj_return"])
     summary = {
         "utility": args.utility,
         "adv_norm": args.adv_norm,
         "seed": args.seed,
         "steps": args.steps,
-        "final_p": p,
-        "final_q": q,
+        "final_p": history["p"][-1],
+        "final_q": history["q"][-1],
+        "p": p,
+        "p_std": p_std,
+        "q": q,
+        "q_std": q_std,
         "equilibrium_p": 0.2,
         "equilibrium_q": 0.2,
         "deviation_p": p - 0.2,
         "deviation_q": q - 0.2,
-        "win_rate": history["win_rate"][-1],
-        "obj_return": history["obj_return"][-1],
+        "win_rate": win_rate,
+        "obj_return": obj_return,
         "drift_p": window_drift(history["p"]),
         "drift_q": window_drift(history["q"]),
         "elapsed_s": round(time.time() - t0, 1),
     }
     print("\n[阶段 3 验证门：单 seed 记录，不下结论]")
-    print(f"  首轮 p̂={p:.4f}  vs 均衡 0.2  偏差 {summary['deviation_p']:+.4f}")
-    print(f"  首轮 q̂={q:.4f}  vs 均衡 0.2  偏差 {summary['deviation_q']:+.4f}")
-    print(f"  皇帝胜率={summary['win_rate']:.4f}  vs 均衡 0.8")
+    print(f"  首轮 p̂={p:.4f}±{p_std:.4f}  vs 均衡 0.2  偏差 {summary['deviation_p']:+.4f}")
+    print(f"  首轮 q̂={q:.4f}±{q_std:.4f}  vs 均衡 0.2  偏差 {summary['deviation_q']:+.4f}")
+    print(f"  皇帝胜率={win_rate:.4f}  vs 均衡 0.8")
     print(f"  末段漂移 Δp={summary['drift_p']:+.4f}  Δq={summary['drift_q']:+.4f}")
     print(f"  用时 {summary['elapsed_s']}s（{args.utility}, adv_norm={'on' if args.adv_norm else 'off'}）")
 

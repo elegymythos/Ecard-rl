@@ -33,7 +33,7 @@
 | 1 | env.py + test_env.py | ✅ 完成（8/8 测试通过） |
 | 2 | solver.py | ✅ 完成（欠账：AI 写的，待凭记忆重写） |
 | 3 | utility.py + ppo.py + train.py | 🟡 初版完成（AI 写，待你重写） |
-| 4 | sweep.py + (λ, τ) 相图 | 🟡 run03 完成，待收敛探测 |
+| 4 | sweep.py + (λ, τ) 相图 | ✅ run05 完成（23/60 收敛，正式相图已出，见 data/runs/run05/） |
 | 5 | 人类对局数据 | ⬜ 待做 |
 | 6 | results.md | 🟡 草稿已建（2026-08-13） |
 

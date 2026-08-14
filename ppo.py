@@ -64,8 +64,9 @@ class Buffer:
         self.next_values: list[float] = []
         self.rewards: list[float] = []
         self.dones: list[bool] = []
+        self.masks: list[np.ndarray] = []
 
-    def add(self, state, action, logp, value, next_value, reward, done):
+    def add(self, state, action, logp, value, next_value, reward, done, mask):
         self.states.append(state)
         self.actions.append(action)
         self.logps.append(logp)
@@ -73,6 +74,7 @@ class Buffer:
         self.next_values.append(next_value)
         self.rewards.append(reward)
         self.dones.append(done)
+        self.masks.append(mask)
 
     def __len__(self):
         return len(self.rewards)
@@ -107,7 +109,10 @@ class Buffer:
         returns_t = torch.as_tensor(returns, dtype=torch.float32)
         if ret_norm:
             returns_t = (returns_t - returns_t.mean()) / (returns_t.std() + 1e-8)
-        return (states, actions, old_logps, adv_t, returns_t)
+        # mask 必须随 buffer 进训练：update_policy 里要与采样时一样给 logits 加 mask，
+        # 否则强制状态（第 5 轮/平民耗尽）的 importance ratio 会偏离 1（旧 bug）。
+        masks_t = torch.as_tensor(np.stack(self.masks), dtype=torch.float32)
+        return (states, actions, old_logps, adv_t, returns_t, masks_t)
 
 
 def _mask(legal_actions: list[int]) -> torch.Tensor:
@@ -147,8 +152,10 @@ def collect_rollout(env, agents, utilities, steps, gamma, lam):
 
         nv_e = 0.0 if done else agents["emperor"].value(next_obs)
         nv_s = 0.0 if done else agents["slave"].value(next_obs)
-        buffers["emperor"].add(obs, a_e, lp_e, v_e, nv_e, r_e, done)
-        buffers["slave"].add(obs, a_s, lp_s, v_s, nv_s, r_s, done)
+        buffers["emperor"].add(obs, a_e, lp_e, v_e, nv_e, r_e, done,
+                               mask_e.squeeze(0).numpy())
+        buffers["slave"].add(obs, a_s, lp_s, v_s, nv_s, r_s, done,
+                             mask_s.squeeze(0).numpy())
 
         subj_sums["emperor"] += r_e
         subj_sums["slave"] += r_s
@@ -185,13 +192,14 @@ def collect_rollout(env, agents, utilities, steps, gamma, lam):
 def update_policy(agent, optimizer, buffer, *, gamma, lam, clip_eps, ent_coef,
                   adv_norm, epochs, batch_size, ret_norm=False, min_ent=0.0):
     """对单个 agent 做 PPO 更新。返回 (policy_loss, value_loss, entropy)。"""
-    states, actions, old_logps, adv, returns = buffer.get(gamma, lam, adv_norm, ret_norm)
+    states, actions, old_logps, adv, returns, masks = buffer.get(gamma, lam, adv_norm, ret_norm)
     n = len(states)
     for _ in range(epochs):
         perm = torch.randperm(n)
         for i in range(0, n, batch_size):
             idx = perm[i:i + batch_size]
             logits, values = agent(states[idx])
+            logits = logits + masks[idx]  # 与采样时一致的动作 mask（修：训练端曾漏加）
             dist = Categorical(logits=logits)
             logp = dist.log_prob(actions[idx])
             ratio = (logp - old_logps[idx]).exp()
