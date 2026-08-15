@@ -61,7 +61,7 @@ def _window_stats(series: list[float], tail: float = 0.2) -> tuple[float, float]
 def run_config(lam: float, tau: float, seed: int, *, steps: int,
                rollout: int, epochs: int, batch: int, lr: float,
                ent_coef: float, ret_norm: bool, min_ent: float,
-               weight_mode: str, conv_tol: float) -> dict:
+               weight_mode: str, conv_tol: float, conv_std: float) -> dict:
     """单格子单 seed 的自博弈训练，返回最终指标。"""
     t0 = time.time()
     torch.manual_seed(seed)
@@ -114,7 +114,11 @@ def run_config(lam: float, tau: float, seed: int, *, steps: int,
         "ent_e_init": ent_e_mean, "ent_s_init": ent_s_mean,
         "subj_std": {"emperor": subj_std_e_mean, "slave": subj_std_s_mean},
         "drift_p": drift_p, "drift_q": drift_q,
-        "converged": abs(drift_p) < conv_tol and abs(drift_q) < conv_tol,
+        # 修（2026-08-15）：收敛必须同时满足「漂移小」和「末段窗口 std 小」。
+        # 旧判据只看 |Δ|，对周期振荡失明——run05 的 23/60「收敛」全部是假阳性
+        # （q 全程 std 0.25+ 的极限环，前后窗口均值巧合相等）。
+        "converged": (abs(drift_p) < conv_tol and abs(drift_q) < conv_tol
+                      and p_std < conv_std and q_std < conv_std),
         "elapsed_s": round(time.time() - t0, 2),
         "p_series": hist["p"], "q_series": hist["q"],  # 完整序列进 runs.jsonl
     }
@@ -191,6 +195,9 @@ def main():
                     help="奴隶概率权重：window=滑动窗口（策略反馈环）/ ref=固定参考概率 / off=无")
     ap.add_argument("--conv-tol", type=float, default=0.05,
                     help="收敛门：|末段漂移| 低于此值才算站住")
+    ap.add_argument("--conv-std", type=float, default=0.1,
+                    help="收敛门（修）：末段窗口 std 低于此值——防极限环假收敛"
+                         "（旧判据只查 |Δ|，对周期振荡失明，run05 的 23/60 全为假阳性）")
     ap.add_argument("--cells", default=None,
                     help="只跑指定格子，如 '1-0.5,5-1.0'（λ-τ 对，逗号分隔）")
     ap.add_argument("--seeds", default=None, help="只跑指定种子，如 '42,43'")
@@ -228,7 +235,7 @@ def main():
                              epochs=args.epochs, batch=args.batch, lr=args.lr,
                              ent_coef=args.ent_coef, ret_norm=args.ret_norm,
                              min_ent=args.min_ent, weight_mode=args.weight_mode,
-                             conv_tol=args.conv_tol)
+                             conv_tol=args.conv_tol, conv_std=args.conv_std)
             rec_log = {k: v for k, v in rec.items()
                        if k not in ("p_series", "q_series")}
             runs.append(rec_log)
@@ -293,6 +300,7 @@ def main():
             "weight_mode": args.weight_mode,
             "weight_ref_prob": 0.2,
             "conv_tol": args.conv_tol,
+            "conv_std": args.conv_std,
             "git_dirty": _git_dirty(),
             "seeds": seeds,
             "started_at": started_at,
@@ -339,7 +347,8 @@ def main():
     (out_dir / "grid.json").write_text(grid_text, encoding="utf-8")
     if out_dir != sweep_dir:
         (sweep_dir / "grid.json").write_text(grid_text, encoding="utf-8")
-    print(f"收敛门（tol={args.conv_tol}）：{summary['n_converged']}/{len(runs)} 次运行站住")
+    print(f"收敛门（|Δ|<{args.conv_tol} 且 末段std<{args.conv_std}）："
+          f"{summary['n_converged']}/{len(runs)} 次运行站住")
     if summary["n_converged"] == 0:
         print("警告：没有任何运行在容差内收敛——结果只是有限预算快照，不是均衡。")
 
