@@ -1,10 +1,9 @@
-"""阶段 3：PPO 核心（约 200 行）。
+"""阶段 3：PPO 核心（双 agent 自博弈）。
 
-设计（direction.md 阶段 3）：
 - actor-critic 64 维、GAE、clip、熵正则；皇帝/奴隶两个独立 agent。
-- 优势归一化默认关，做成 flag——旧 README 结果的元凶，要单独研究。
-- 环境只给客观奖励，主观效用由 utility 层包装后进入各自 buffer。
-- 单 seed 结果只记录，不下「收敛」结论。
+- 优势归一化默认关，作为独立开关（旧实现的主要混淆变量）。
+- 环境只给客观奖励；主观效用由 utility 层包装后进入各自 buffer。
+- 单 seed 结果只记录，不单独下收敛结论。
 """
 from __future__ import annotations
 

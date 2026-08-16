@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from env import ECardEnv
+from env import ECardEnv, EnvConfig
 from ppo import Agent, collect_rollout, first_round_probs, update_policy
 from utility import make_utility
 
@@ -28,6 +28,8 @@ def parse_args():
     p.add_argument("--lam", type=float, default=0.95)
     p.add_argument("--clip", type=float, default=0.2)
     p.add_argument("--ent-coef", type=float, default=0.01)
+    p.add_argument("--reward-loss", type=float, default=-5.0,
+                   help="A-A 时皇帝的客观损失（默认 -5；设为 -1 即对称收益消融）")
     p.add_argument("--quick", action="store_true", help="冒烟测试：短跑、少 epoch")
     return p.parse_args()
 
@@ -56,7 +58,7 @@ def main():
 
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
-    env = ECardEnv()
+    env = ECardEnv(EnvConfig(reward_emperor_loss=args.reward_loss))
     agents = {"emperor": Agent(), "slave": Agent()}
     optimizers = {k: torch.optim.Adam(agents[k].parameters(), lr=args.lr) for k in agents}
     utilities = {k: make_utility(args.utility) for k in agents}

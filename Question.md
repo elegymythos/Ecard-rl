@@ -4,7 +4,7 @@
 
 ## 0. 一句话
 
-这个项目问的不是「皇帝牌的均衡是什么」，而是三种「均衡」各自是什么、差在哪里：理性均衡（数学解）、PPO 原始动力学（梯度下降物种的吸引子）、心理均衡（赌徒的主观效用）。
+这个项目问的不是「皇帝牌的均衡是什么」，而是三种「均衡」各自是什么、差在哪里：理性均衡（数学解）、PPO 原始动力学（梯度下降智能体的吸引子）、心理均衡（赌徒的主观效用）。
 
 ## 1. 博弈分类（事实，不需要证伪）
 
@@ -31,7 +31,7 @@
 
 - **可证伪假设**：identity 效用 + 优势归一化关闭时，PPO 末段窗口内的首轮出牌概率 p̂、q̂ 会偏离均衡（0.2、0.2）；偏离的方向和大小，与旧运行（p=0.294、q=0.456）对比后，才能判断「优势归一化是吸引子的唯一来源」还是「自博弈本身就会漂移」。
 - **验证门**：单 seed 先记录 p̂、q̂ 和末段漂移；多 seed 复核之前，不许写「收敛」两个字。
-- **如果错了**（p̂、q̂ 逼近 0.2）：旧 README 的归因要重写——元凶不是优势归一化。这是好事，说明你发现了一个新故事。
+- **如果错了**（p̂、q̂ 逼近 0.2）：旧 README 的归因要重写——元凶不是优势归一化。该情况本身是一个新发现。
 
 ### 问题三：心理均衡（前景理论效用）
 
@@ -54,7 +54,7 @@
 
 ## 4. 继续书写的学习资料（按阶段）
 
-使用规则：每条资料读到**你能写出对应那行假设**就停。读教程不是学习，输出预测才算。
+使用规则：每条资料读到**能写出对应假设**即停。读教程不是学习，输出预测才算学习。
 
 ### 博弈论（阶段 2 solver 的依据）
 
@@ -66,7 +66,7 @@
 
 - Sutton & Barto《Reinforcement Learning: An Introduction》第二版，官方免费 PDF：[incompleteideas.net/book/RLbook2020.pdf](http://incompleteideas.net/book/RLbook2020.pdf)（有中文翻译仓库：[qiwihui/reinforcement-learning-an-introduction-chinese](https://github.com/qiwihui/reinforcement-learning-an-introduction-chinese)）
 - OpenAI Spinning Up：Key Concepts + PPO 单页，概念最浓缩的入口：[spinningup.openai.com](https://spinningup.openai.com/en/latest/algorithms/ppo.html)
-- CleanRL 单文件 PPO（约 340 行）：看完它，你写 180 行就有底气：[github.com/vwxyzjn/cleanrl](https://github.com/vwxyzjn/cleanrl)
+- CleanRL 单文件 PPO（约 340 行）：该实现可作为约 180 行 PPO 的参考：[github.com/vwxyzjn/cleanrl](https://github.com/vwxyzjn/cleanrl)
 - Hugging Face Deep RL Course：动手向教程，边跑边学：[huggingface.co/learn/deep-rl-course](https://huggingface.co/learn/deep-rl-course/unit0/introduction)
 
 ### 前景理论（阶段 4 utility.py 的依据）

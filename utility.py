@@ -1,11 +1,11 @@
-"""阶段 3 效用层：把客观奖励映射成 agent 最大化的主观效用。
+"""阶段 3 效用层：把客观奖励映射为 agent 最大化的主观效用。
 
-接口统一：utility(reward, context) -> float
+接口统一：utility(reward, context) -> float。
 context 由 train.py 传入，至少包含 streak_losses（该 agent 当前连败数）。
 
-设计顺序（direction.md 阶段 3）：identity 先跑通 → prospect → tilt。
-阶段 4 扫描会用到 prospect 的概率权重（use_weighting=True）。
-心理只在这里，不污染 env.py。
+设计顺序：identity → prospect → tilt。
+阶段 4 扫描使用 prospect 的概率权重（use_weighting=True）。
+心理只在本层实现，不污染 env.py。
 """
 from __future__ import annotations
 
@@ -42,7 +42,7 @@ def make_prospect(alpha: float = 0.88, beta: float = 0.88,
     use_weighting=False：只做价值函数（收益 x**α，损失 -λ*(-x)**β）。
     use_weighting="window"（或 True）：对滑动窗口内的胜负频率做概率权重 w(p, γ)，
     每个事件按 w(p)/p 缩放，使期望主观效用 ≈ w(p_win)·v(+|x|) + w(p_loss)·v(-|x|)。
-    这是把 CPT 决策权重装进逐回合奖励的一种实现——重写时你可以换成别的。
+    这是把 CPT 决策权重装进逐回合奖励的一种实现；重写时可替换为其他实现。
     注意：窗口频率由 agent 当前策略自己造成，形成反馈环；要隔离它，
     用 use_weighting="ref"——固定参考概率 ref_prob（默认 0.2 = 均衡胜率），
     乘子 = w(p_ref)/p_ref 或 w(1-p_ref)/(1-p_ref)，与策略无关。

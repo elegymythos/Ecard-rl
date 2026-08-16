@@ -1,89 +1,65 @@
-# Ecard-rl：皇帝牌博弈 × 前景理论 × PPO
+# PROJECT.md — 项目整体说明
 
-> 项目整体说明（2026-08-09）。分阶段计划见 direction.md；研究问题见 Question.md；旧实现基线见 readme.md。
+> 版本：2026-08-16 修订。
 
-## 一句话
+## 1. 摘要
 
-不是复现 PPO，是用 PPO 模拟赌徒：比较理性均衡、梯度下降的吸引子、赌徒的心理均衡。
+本项目用自博弈 PPO 模拟「皇帝牌」博弈中的有限理性学习动力学，比较三类均衡：
 
-## 游戏规则
+1. **理性均衡**：完整 5 轮博弈的递归混合策略纳什均衡，`solver.py` 验证 V₄=-0.2、首轮 p=q=0.2、胜率 0.8。
+2. **PPO 动力学落点**：在 min-ent 0.5 条件下，自博弈 PPO 收敛到均衡邻域（run06 identity 角 p=0.207、q=0.253、胜率 0.800、期望 -0.198）。
+3. **心理均衡**：前景理论效用层（λ、τ、α/β）对落点只有弱次级效应；主要偏差 q-p≈+0.05 与效用层无关（run06_curv 真 identity 仍存在）。
 
-- 双方各 1 张王牌 + 4 张平民，每轮同时出牌；
-- A-A → 奴隶胜（皇帝 -5）；A-C / C-A → 皇帝胜（+1）；C-C → 平局，进入下一轮；
-- 第 5 轮强制 A-A（奴隶胜）。
+**当前证据边界**：无人类数据；“现实均衡”仍为模拟侧假设。
+
+## 2. 游戏规则
+
+- 双方各 1 张王牌 + 4 张平民，每轮同时出牌。
+- A-A → 奴隶胜（皇帝 -5）；A-C / C-A → 皇帝胜（+1）；C-C → 平局进入下一轮；第 5 轮强制 A-A。
 
 皇帝视角收益矩阵：
 
-| 皇帝 \ 奴隶 | 出王牌 A | 出平民 C |
+| 皇帝 \ 奴隶 | A | C |
 | :---: | :---: | :---: |
-| **出王牌 A** | -5（奴隶胜） | +1（皇帝胜） |
-| **出平民 C** | +1（皇帝胜） | 0（平局） |
+| **A** | -5 | +1 |
+| **C** | +1 | 0 |
 
-## 三种均衡
+## 3. 方法
 
-1. **理性均衡**（数学解）：solver.py 已验证——完整 5 轮博弈值 V_4=-0.2，首轮 p=q=0.2，均衡胜率 80%，每轮闭式 p_k=1/(k+1)。README 里的 1/7、+1/7 只是单轮静态近似。
-2. **PPO 原始动力学**（裸奖励，2026-08-16 结论）：min-ent 0.5 + 400k 下自博弈收敛到**均衡邻域**——identity 角 p=0.207、q=0.253、胜率 0.800、期望 -0.198（run06）。旧实现的 p=0.294/q=0.456 是优势归一化 + 熵塌缩的叠加产物，不是 PPO 的固有吸引子。
-3. **心理均衡**（前景理论效用，2026-08-16 结论）：run06 全网格证明 λ、τ、α/β **只产生弱次级效应，不移动均衡落点**（λ↑→p↓ -0.023；τ 无位置效应）。q-p≈+0.05 的残余不对称是 +1/-5 量级不对称导致的训练动力学固有偏差（run06_curv 真 identity 下仍存在），与效用层无关。阶段 4 相图（data/runs/run06/phase_diagram.png）是「现实均衡」的第一版答案。
-
-## 当前进度
-
-| 阶段 | 交付物 | 状态 |
+| 组件 | 文件 | 说明 |
 | :--- | :--- | :--- |
-| 0 | Question.md | ✅ 完成 |
-| 1 | env.py + test_env.py | ✅ 完成（8/8 测试通过） |
-| 2 | solver.py | ✅ 完成（欠账：AI 写的，待凭记忆重写） |
-| 3 | utility.py + ppo.py + train.py | 🟡 初版完成（AI 写，待你重写） |
-| 4 | sweep.py + (λ, τ) 相图 | ✅ run06 完成（58/60 真收敛，正式相图 data/runs/run06/；run05 判据作废） |
-| 5 | 人类对局数据 | ⬜ 待做 |
-| 6 | results.md | ✅ 已定稿（2026-08-16） |
+| 环境 | `env.py` | 5 维状态；客观奖励 +1/-5/0；非法动作 fail loud |
+| 精确解 | `solver.py` | 递归 2×2 零和矩阵求解，内置验证门 |
+| 效用层 | `utility.py` | identity / prospect（λ、α/β、γ）/ tilt |
+| 学习算法 | `ppo.py` | 双 agent、actor-critic 64 维、GAE、clip、熵正则、min-ent hinge |
+| 训练入口 | `train.py` | 阶段 3 单配置训练 |
+| 扫描 | `sweep.py` | λ×τ 网格、预测核验、相图、收敛诊断 |
 
-## 文件地图
+## 4. 主要结果（截至 2026-08-16）
 
-| 文件 | 作用 |
-| :--- | :--- |
-| direction.md | 分阶段计划与实验纪律 |
-| Question.md | 阶段 0 研究问题（三个可证伪假设）+ 推导附录 |
-| env.py | 最小环境：5 维状态，客观奖励 +1/-5/0，非法动作 fail loud |
-| test_env.py | 环境规则测试（8 项） |
-| solver.py | 阶段 2 精确解：递归价值求解，验证门内建于断言 |
-| utility.py | 效用层：identity / prospect（λ、α、β、γ）/ tilt |
-| ppo.py | PPO 核心：actor-critic 64 维、GAE、clip、熵正则，双 agent |
-| train.py | 训练入口：identity 冒烟/短跑，双日志，验证门输出 |
-| sweep.py | 阶段 4：λ×τ 网格扫描 + 预测核验 + 相图 |
-| debug/ | 修复记录与调试日志（2026-08-11 起） |
-| data/ | 实验结果：stage3_*.json、sweep/（grid.json、predictions.json、phase_diagram.png） |
-| results.md | 阶段 6 结果定稿：预测核验、收敛判据修正、证据边界、下一步 |
-| readme.md | 旧实现基线（历史记录，不是真相） |
+- run06（min-ent 0.5, 400k, 60 格）：58/60 弱平稳；λ↑→p↓ 单调（Δ=-0.023）；λ 次级效应 q↓（Δ=-0.014）；τ 无位置效应；q-p 均值 +0.048（60/60 为正）。
+- run06_curv（α=β=1.0, 2 seeds）：q-p=+0.063，说明 q-p 不是曲率所致；但 n=2，属方向性证据。
+- run05 及更早的“收敛”结论全部作废（旧判据对极限环失明）。
 
-## 运行
+## 5. 运行
 
 ```bash
-conda activate torch_env
-python -m pytest test_env.py -q        # 阶段 1 验证门
-python solver.py                       # 阶段 2 验证门
-python train.py --quick                # 阶段 3 冒烟
-python train.py --steps 200000         # 阶段 3 短跑
-python sweep.py --demo                 # 阶段 4 冒烟（3 次运行）
-python sweep.py --steps 400000 --min-ent 0.5   # 阶段 4 正式网格（60 次运行，CPU 约 3.5-9 小时）
+python -m pytest test_env.py -q
+python solver.py
+python train.py --quick
+python train.py --steps 200000
+python sweep.py --demo
+python sweep.py --steps 400000 --min-ent 0.5
 ```
 
-## 实验纪律
+Windows 一键训练脚本：`train_all_next.bat`（先跑验证门，再顺序执行 run07_sym/run08_ref/run09_asym）。
 
-1. 预测写在实验之前。实验后改预测 = 讲故事，不是做研究。
-2. 单 seed 不说收敛，单次运行不写结论。
-3. 收敛判据必须查振荡：只查 |末段漂移| 会漏掉极限环（run05 的 23/60 假收敛教训）——用 |Δ|<tol 且末段 std<conv_std。
-4. 优势归一化默认关，做成 flag——它是旧结果的头号嫌疑。
-5. 心理写在效用层，不污染环境。
-6. AI 写过的代码看完要凭记忆重写，跑同一套验证门。
+补充实验（代码已支持，命令见 results.md §7）：`--reward-loss -1`（对称收益消融）、
+`--slave-lam 2.25`（非对称 λ）、`--weight-mode ref`（反馈环隔离）、
+`--predictions-file`（运行专用预测）。
 
-## 诚实边界
+## 6. 诚实边界
 
-- 阶段 3、4 的初版都是 AI 写的——是练习参考答案，不是结论。
-- run05 的收敛结论已被判据修正推翻（假阳性），以 run06 为准，见 results.md。
-- 冒烟数据只验证管道，不代表任何行为规律。
-- 没有人类数据之前，「现实均衡」只能是假设（阶段 5 待做）。
-- readme.md 的旧数字是起点，不是真相。
-
-## 学习资料
-
-完整列表在 Question.md §4：博弈论（Game Theory 101 / Osborne / von Neumann minimax）、强化学习（Spinning Up / Sutton & Barto / CleanRL）、前景理论（Kahneman & Tversky 1979 / Tversky & Kahneman 1992）、自博弈（MARL book / AlphaZero）。
+- 阶段 2/3/4 的初版代码已由项目所有者凭记忆重写，并通过同一套验证门。
+- 模拟结论仅覆盖 λ×τ×αβ 网格、5 seeds、400k 预算、min-ent 0.5、window 权重模式。
+- 旧 README 数字是历史基线，不是当前结论。
