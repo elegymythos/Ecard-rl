@@ -1,0 +1,4 @@
+{
+  "true_identity_q_minus_p": "α=β=1.0 真 identity 下 q-p 应仍为正，幅度与 run06_curv 的 +0.063 同量级（约 +0.04~+0.07）。",
+  "true_identity_equilibrium": "真 identity 下首轮 p、q 应仍在 0.2 附近（弱平稳中心）。"
+}

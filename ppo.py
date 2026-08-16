@@ -224,13 +224,14 @@ def first_round_probs(agents):
 
 
 @torch.no_grad()
-def first_round_stats(agents):
-    """初始状态策略统计：(p, q, 皇帝策略熵, 奴隶策略熵)。
+def policy_probs_at(agents, obs: np.ndarray, legal_actions: list[int] | None = None):
+    """在给定状态 obs 下返回 (p, q, 皇帝策略熵, 奴隶策略熵)。
 
-    熵用来测「τ↑ → 策略逼近均匀随机」：均匀随机时熵 = ln2 ≈ 0.6931。
+    与 first_round_stats 的区别：不重置环境，适用于 evaluate.py 的逐层分析。
     """
-    obs = ECardEnv().reset()
-    mask = _mask([0, 1])
+    if legal_actions is None:
+        legal_actions = [0, 1]
+    mask = _mask(legal_actions)
     obs_t = torch.as_tensor(obs, dtype=torch.float32).unsqueeze(0)
     ent = {}
     probs = {}
@@ -241,3 +242,13 @@ def first_round_stats(agents):
         ent[name] = float(dist.entropy().item())
     return (float(probs["emperor"][PLAY_ACE]), float(probs["slave"][PLAY_ACE]),
             ent["emperor"], ent["slave"])
+
+
+@torch.no_grad()
+def first_round_stats(agents):
+    """初始状态策略统计：(p, q, 皇帝策略熵, 奴隶策略熵)。
+
+    熵用来测「τ↑ → 策略逼近均匀随机」：均匀随机时熵 = ln2 ≈ 0.6931。
+    """
+    obs = ECardEnv().reset()
+    return policy_probs_at(agents, obs, legal_actions=[0, 1])

@@ -1,0 +1,4 @@
+{
+  "identity_lambda_p_down": "真 identity（α=β=1.0）下 λ↑→p↓ 应与 run06（α=β=0.88）方向一致，幅度可比较（约 -0.02）。",
+  "identity_lambda_q_down": "λ 对 q 的次级效应在真 identity 下仍应为方向性负值或消失；若明显变大，说明曲率此前掩盖/放大了该效应。"
+}

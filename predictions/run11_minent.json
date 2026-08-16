@@ -1,0 +1,4 @@
+{
+  "minent_sensitivity_attractor": "若 min-ent 0.5 是中性稳定器，则 min-ent 0.45/0.55/0.60 下 identity 落点应仍在均衡邻域（p≈q≈0.2），且 λ↑→p↓ 的幅度应大致不变；若落点或 λ 效应随 min-ent 明显移动，则主结论受正则化强度调节。",
+  "minent_sensitivity_convergence": "min-ent 低于 0.5 可能出现更多非弱平稳/振荡；min-ent 高于 0.5 应保持弱平稳但可能把策略推向均匀。"
+}

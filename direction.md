@@ -21,7 +21,7 @@
 | 1 | env.py + test_env.py | ✅ 完成 | 8/8 测试通过；非法动作 fail loud |
 | 2 | solver.py | ✅ 完成（已凭记忆重写） | 单轮 1/7；V_4=-0.2；p_k=1/(k+1)；W=0.8 |
 | 3 | utility.py + ppo.py + train.py | ✅ 完成（已凭记忆重写） | identity 下 p̂/q̂ 对照均衡 (0.2,0.2) |
-| 4 | sweep.py + 网格扫描 | ✅ run06 完成；run07_sym/run08_ref/run09_asym 已完成 | λ×τ 网格 × 5 seeds；预测先写 |
+| 4 | sweep.py + 网格扫描 | ✅ run06/run07_sym/run08_ref/run09_asym/run10_sym/run10_ref 已完成；run11_identity/run12_roleswap/run13_shared/run14_identity_lambda/run11_minent 已排入 `train_all_next.bat` | λ×τ 网格 × 5 seeds；预测先写 |
 | 5 | 人类对局数据 | ⬜ 待做 | 10 人 × 100 局，记录每轮出牌 |
 | 6 | results.md | ✅ 已定稿（后续补充实验将追加修订） | 每行：预测 → 实际 → 解释 |
 
@@ -58,11 +58,11 @@
 - run01–run03、probe_window、probe_minent：仅作病理历史；其“收敛”结论已被 2026-08-15 判据审计推翻。
 - run05（min-ent 0.3）：旧判据 23/60，新判据 **0/60**，全作废。
 - run06（min-ent 0.5, 400k, 60 格）：**58/60 弱平稳**（新判据），全部落在均衡邻域；identity 角（α=β=0.88, λ=1, τ=1）p=0.207、q=0.253、胜率 0.800、期望 -0.198。
-- run06_curv（α=β=1.0 真 identity）：q-p=+0.063 不消失 → 曲率不是 q-p 的来源；但 n=2，仅方向性证据。
-- run07_sym（对称收益消融，A-A 皇帝 -1）：已完成，q-p 仍为正（+0.047）→ 量级不对称不是 q-p 的必要条件。
-- run08_ref（概率权重 ref 模式）：已完成，q 随 τ 升高略降（0.275→0.255，n=2，方向性）。
+- run06_curv（α=β=1.0 真 identity）：q-p=+0.063 不消失；n=2，仅方向性证据，已排 run11_identity 补到 5 seeds。
+- run07_sym + run10_sym（对称收益消融，A-A 皇帝 -1，5 seeds）：q-p 仍 5/5 为正（+0.049）→ 量级不对称不是 q-p 的必要条件；但 5/5 中仅 2/5 弱平稳，最终幅度未稳定。
+- run08_ref + run10_ref（概率权重 ref 模式，5 seeds）：τ 位置效应消失（配对 p≈0.37），run08_ref 的 2-seed 方向性结论是噪声。
 - run09_asym（非对称 λ）：已完成，未发现奴隶 λ=2.25 对 q 的降低效应。
-- run10_sym / run10_ref（补 seeds）：待训练，命令见 results.md §7 与 `train_all_next.bat`。
+- 待跑：run11_identity（真 identity n=5）、run12_roleswap（角色交换）、run13_shared（共享网络）、run14_identity_lambda（真 identity λ 轴）、run11_minent（min-ent 敏感性）。
 
 ## 6. 文件结构
 
@@ -72,7 +72,9 @@
 - `utility.py`：效用层（identity / prospect / tilt）。
 - `ppo.py`：PPO 核心（双 agent、GAE、clip、熵正则、min-ent 约束）。
 - `train.py`：阶段 3 训练入口。
-- `sweep.py`：阶段 4 网格扫描、预测核验、相图、收敛诊断。
+- `sweep.py`：阶段 4 网格扫描、预测核验、相图、收敛诊断；支持 `--swap-roles`/`--shared-policy`/`--save-agents`。
+- `analyze.py`：合并 run 目录、seed 聚类统计、置换检验（只读分析）。
+- `evaluate.py`：逐层策略与 exploitability 分析（读取 `--save-agents` 的 checkpoint）。
 - `results.md`：阶段 6 结果定稿。
 - `debug/`：逐日修复与审计记录（历史日志）。
 - `data/runs/`：正式运行归档。

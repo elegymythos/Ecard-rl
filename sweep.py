@@ -7,6 +7,8 @@
 - 每个配置记录：首轮 p̂、q̂、胜率、客观期望、末段漂移、末段 std、末段 peak-to-peak。
 - 预测先写；支持 `--predictions-file` 加载运行专用预测。
 - 支持 `--reward-loss`（对称收益消融）与 `--slave-lam`（非对称 λ 扩展）。
+- 支持 `--swap-roles`（角色交换消融）、`--shared-policy`（共享网络消融）、
+  `--save-agents`（保存 checkpoint 供 evaluate.py 使用）。
 
 收敛诊断：
 - 主判据：|Δp|、|Δq| < conv_tol 且末段窗口 p_std、q_std < conv_std；
@@ -85,18 +87,31 @@ def run_config(lam: float, tau: float, seed: int, *, steps: int,
                ent_coef: float, ret_norm: bool, min_ent: float,
                weight_mode: str, conv_tol: float, conv_std: float,
                alpha: float, beta: float, reward_loss: float = -5.0,
-               slave_lam: float = 1.0) -> dict:
+               slave_lam: float = 1.0, swap_roles: bool = False,
+               shared_policy: bool = False, save_agents: bool = False,
+               save_dir: Path | None = None) -> dict:
     """单格子单 seed 的自博弈训练，返回最终指标。
 
     reward_loss：A-A 时皇帝的客观损失（默认 -5；设为 -1 即对称收益消融）。
     slave_lam：奴隶前景理论 λ（默认 1.0；用于非对称 λ 扩展）。
+    swap_roles：每轮更新后交换 emperor/slave 网络与优化器，消除角色标签/
+        更新顺序造成的持久不对称（应配合真 identity 使用）。
+    shared_policy：皇帝/奴隶共享同一网络与优化器（分别用各自 buffer 更新），
+        构造性检验 q-p 是否需要两个独立网络。
+    save_agents：训练结束后保存 agent 权重到 <save_dir>/checkpoints/，供 evaluate.py 分析。
     """
     t0 = time.time()
     torch.manual_seed(seed)
     np.random.seed(seed)
     env = ECardEnv(EnvConfig(reward_emperor_loss=reward_loss))
-    agents = {"emperor": Agent(), "slave": Agent()}
-    optimizers = {k: torch.optim.Adam(agents[k].parameters(), lr=lr) for k in agents}
+    if shared_policy:
+        shared = Agent()
+        agents = {"emperor": shared, "slave": shared}
+        opt = torch.optim.Adam(shared.parameters(), lr=lr)
+        optimizers = {"emperor": opt, "slave": opt}
+    else:
+        agents = {"emperor": Agent(), "slave": Agent()}
+        optimizers = {k: torch.optim.Adam(agents[k].parameters(), lr=lr) for k in agents}
     slave_weighting = {"off": False, "window": True, "ref": "ref"}[weight_mode]
     utilities = {
         # 皇帝变 λ（损失厌恶）；奴隶默认 λ=1，只变 τ——隔离效应；
@@ -117,6 +132,9 @@ def run_config(lam: float, tau: float, seed: int, *, steps: int,
                           gamma=0.99, lam=0.95, clip_eps=0.2, ent_coef=ent_coef,
                           adv_norm=False, epochs=epochs, batch_size=batch,
                           ret_norm=ret_norm, min_ent=min_ent)
+        if swap_roles:
+            agents["emperor"], agents["slave"] = agents["slave"], agents["emperor"]
+            optimizers["emperor"], optimizers["slave"] = optimizers["slave"], optimizers["emperor"]
         p, q, ent_e, ent_s = first_round_stats(agents)
         hist["p"].append(p)
         hist["q"].append(q)
@@ -139,9 +157,25 @@ def run_config(lam: float, tau: float, seed: int, *, steps: int,
     drift_q = _drift(hist["q"])
     p_tail_range = _tail_range(hist["p"])
     q_tail_range = _tail_range(hist["q"])
+    if save_agents and save_dir is not None:
+        ckpt_dir = Path(save_dir) / "checkpoints"
+        ckpt_dir.mkdir(parents=True, exist_ok=True)
+        ckpt_meta = {
+            "lambda": lam, "tau": tau, "seed": seed,
+            "reward_loss": reward_loss, "slave_lam": slave_lam,
+            "alpha": alpha, "beta": beta, "weight_mode": weight_mode,
+            "min_ent": min_ent, "swap_roles": swap_roles,
+            "shared_policy": shared_policy,
+        }
+        torch.save(
+            {"agents": {name: agents[name].state_dict() for name in agents},
+             "meta": ckpt_meta},
+            ckpt_dir / f"lam{lam}-tau{tau}-seed{seed}.pt",
+        )
     return {
         "lambda": lam, "tau": tau, "seed": seed,
         "reward_loss": reward_loss, "slave_lam": slave_lam,
+        "swap_roles": swap_roles, "shared_policy": shared_policy,
         "final_p": hist["p"][-1], "final_q": hist["q"][-1],  # 与 run01 兼容的旧字段
         "p": p_mean, "q": q_mean, "p_std": p_std, "q_std": q_std,
         "p_tail_range": p_tail_range, "q_tail_range": q_tail_range,
@@ -246,9 +280,17 @@ def main():
                     help="A-A 时皇帝的客观损失（默认 -5；设为 -1 即对称收益消融）")
     ap.add_argument("--slave-lam", type=float, default=1.0,
                     help="奴隶前景理论 λ（默认 1.0；非对称 λ 扩展用）")
+    ap.add_argument("--swap-roles", action="store_true",
+                    help="每轮更新后交换 emperor/slave 网络与优化器，消除角色标签/更新顺序的持久不对称")
+    ap.add_argument("--shared-policy", action="store_true",
+                    help="皇帝/奴隶共享同一网络与优化器（分别用各自 buffer 更新）")
+    ap.add_argument("--save-agents", action="store_true",
+                    help="每 run 结束后保存 agents.pt 到 <out_dir>/checkpoints/，供 evaluate.py 使用")
     ap.add_argument("--predictions-file", default=None,
                     help="运行专用预测 JSON 文件（默认写内置 PREDICTIONS）")
     args = ap.parse_args()
+    if args.swap_roles and args.shared_policy:
+        ap.error("--swap-roles 与 --shared-policy 不能同时使用")
 
     sweep_dir = Path("data/sweep")
     out_dir = sweep_dir if args.name is None else Path("data/runs") / args.name
@@ -306,7 +348,9 @@ def main():
                              min_ent=args.min_ent, weight_mode=args.weight_mode,
                              conv_tol=args.conv_tol, conv_std=args.conv_std,
                              alpha=args.alpha, beta=args.beta,
-                             reward_loss=args.reward_loss, slave_lam=args.slave_lam)
+                             reward_loss=args.reward_loss, slave_lam=args.slave_lam,
+                             swap_roles=args.swap_roles, shared_policy=args.shared_policy,
+                             save_agents=args.save_agents, save_dir=out_dir)
             rec_log = {k: v for k, v in rec.items()
                        if k not in ("p_series", "q_series")}
             runs.append(rec_log)
@@ -382,6 +426,9 @@ def main():
             "beta": args.beta,
             "reward_loss": args.reward_loss,
             "slave_lam": args.slave_lam,
+            "swap_roles": args.swap_roles,
+            "shared_policy": args.shared_policy,
+            "save_agents": args.save_agents,
             "seeds": seeds,
             "started_at": started_at,
             "git_commit_start": started_git,
