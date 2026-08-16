@@ -104,10 +104,15 @@ run01/02 有管道与网格问题（单点快照、γ=0.1 退化），只作历�
 
 ### 下一步
 
+**run06_curv：α=β=1.0 真 identity 消融（验 q-p 曲率假说）**
+
 ```bash
-# α=β=1.0 真 identity 消融（验 q-p 曲率假说，2 seeds 即可，~20 分钟）：
-python sweep.py --name run06_curv --cells "1-1.0" --seeds "42,43" --steps 400000 --min-ent 0.5
-# 需给 sweep.py 加 alpha/beta 透传参数（utility.py 已支持，sweep.py 未暴露）
+python sweep.py --name run06_curv --cells "1-1.0" --seeds "42,43" --steps 400000 --min-ent 0.5 --alpha 1.0 --beta 1.0
 ```
+
+**预测（写在实验之前，2026-08-16）**：
+1. 2/2 收敛（同 m05 配置，min-ent 0.5 已证明可收敛）。
+2. **q-p 不对称显著缩小或消失**：run06 λ1τ1 的 q-p=+0.045 → α=β=1.0 下 q-p ≈ 0（噪声 ±0.02 内）。若成立 → q-p 的元凶是 α=β=0.88 曲率不对称（slave 的 +5→+4.10 大赢 vs 皇帝 +1→1.0 小赢；slave -1→-1.0 小输 vs 皇帝 -5→-4.10 大输）；若不消失 → 是自博弈学习动力学的固有不对称（非效用层）。
+3. 绝对位置：p、q 都应更贴近均衡 0.2（曲率消除后无心理偏置）。
 
 随后：阶段 5 人类数据、results.md 定稿、direction.md/PROJECT.md 阶段状态同步。

@@ -61,7 +61,8 @@ def _window_stats(series: list[float], tail: float = 0.2) -> tuple[float, float]
 def run_config(lam: float, tau: float, seed: int, *, steps: int,
                rollout: int, epochs: int, batch: int, lr: float,
                ent_coef: float, ret_norm: bool, min_ent: float,
-               weight_mode: str, conv_tol: float, conv_std: float) -> dict:
+               weight_mode: str, conv_tol: float, conv_std: float,
+               alpha: float, beta: float) -> dict:
     """单格子单 seed 的自博弈训练，返回最终指标。"""
     t0 = time.time()
     torch.manual_seed(seed)
@@ -72,8 +73,10 @@ def run_config(lam: float, tau: float, seed: int, *, steps: int,
     slave_weighting = {"off": False, "window": True, "ref": "ref"}[weight_mode]
     utilities = {
         # 皇帝只变 λ，奴隶只变 τ——隔离效应，重写时别混掉
-        "emperor": make_prospect(lam=lam, gamma=1.0, use_weighting=False),
-        "slave": make_prospect(lam=1.0, gamma=tau, use_weighting=slave_weighting),
+        "emperor": make_prospect(lam=lam, alpha=alpha, beta=beta,
+                                 gamma=1.0, use_weighting=False),
+        "slave": make_prospect(lam=1.0, alpha=alpha, beta=beta,
+                               gamma=tau, use_weighting=slave_weighting),
     }
     n_updates = max(1, steps // rollout)
     hist = {k: [] for k in ["p", "q", "ent_e", "ent_s", "win", "ret",
@@ -193,6 +196,10 @@ def main():
                     help="优势+回报标准化（心理运行奖励尺度大时的稳定性开关）")
     ap.add_argument("--weight-mode", choices=["window", "ref", "off"], default="window",
                     help="奴隶概率权重：window=滑动窗口（策略反馈环）/ ref=固定参考概率 / off=无")
+    ap.add_argument("--alpha", type=float, default=0.88,
+                    help="前景理论收益曲率 α（=β；α=β=1 时为真 identity，用于曲率消融）")
+    ap.add_argument("--beta", type=float, default=0.88,
+                    help="前景理论损失曲率 β（=α）")
     ap.add_argument("--conv-tol", type=float, default=0.05,
                     help="收敛门：|末段漂移| 低于此值才算站住")
     ap.add_argument("--conv-std", type=float, default=0.1,
@@ -235,7 +242,8 @@ def main():
                              epochs=args.epochs, batch=args.batch, lr=args.lr,
                              ent_coef=args.ent_coef, ret_norm=args.ret_norm,
                              min_ent=args.min_ent, weight_mode=args.weight_mode,
-                             conv_tol=args.conv_tol, conv_std=args.conv_std)
+                             conv_tol=args.conv_tol, conv_std=args.conv_std,
+                             alpha=args.alpha, beta=args.beta)
             rec_log = {k: v for k, v in rec.items()
                        if k not in ("p_series", "q_series")}
             runs.append(rec_log)
@@ -301,6 +309,8 @@ def main():
             "weight_ref_prob": 0.2,
             "conv_tol": args.conv_tol,
             "conv_std": args.conv_std,
+            "alpha": args.alpha,
+            "beta": args.beta,
             "git_dirty": _git_dirty(),
             "seeds": seeds,
             "started_at": started_at,
