@@ -1,6 +1,6 @@
 # results.md — 阶段 6 结果定稿（修订版）
 
-> 状态：✅ 定稿（2026-08-16 修订；run07_sym/run08_ref/run09_asym 为待训练实验，命令见 §7）。
+> 状态：✅ 定稿（2026-08-16 修订；run06/run06_curv/run07_sym/run08_ref/run09_asym 已完成）。
 > 结论分级：✅ 已验证 ｜ 🟡 方向性成立但证据有限 ｜ ⬜ 待验证。
 > 术语约定：本修订版将原“真收敛”改为「弱平稳」——满足 |Δ|<0.05 且末段 std<0.1
 > 的过程仍存在小振幅振荡（见 §3.3），不等同于固定点收敛。
@@ -16,8 +16,9 @@
    λ↑→p↓（Δ=-0.023，95% bootstrap CI [0.017, 0.028]）；λ 次级效应 q↓
    （Δ=-0.014，95% CI [0.006, 0.021]）；τ 无位置效应；曲率效应（run06_curv）
    n=2、不显著。**没有任何参数组合产生远离均衡的吸引子。**
-   主要偏差 q-p≈+0.048（60/60 为正）在真 identity（α=β=1.0）下仍存在，
-   但与效用层无关的机制解释尚未被唯一确认；对称收益消融（run07_sym）已设计待训练。
+   主要偏差 q-p≈+0.048（60/60 为正）在真 identity（α=β=1.0）下仍存在；
+   run07_sym 对称收益消融（A-A 皇帝 -1）中 q-p 仍为正（+0.047，n=3），
+   说明 q-p 不依赖 +1/-5 量级不对称。
 
 3. **“现实均衡”指什么？**
    当前证据边界内，= min-ent 0.5 + 400k 下自博弈的弱平稳中心：
@@ -132,46 +133,79 @@ q 的 λ 效应在 τ 层内不一致（τ=0.5：-0.021；τ=0.75：-0.002；τ=
 - 该次运行的 grid.json 中 check_lambda/check_tau 含 NaN（运行中脚本被修改/提交，
   旧代码部分网格 bug）；runs.jsonl 已去重，核验以 runs.jsonl 为准。
 
+### 5.3 run07_sym：对称收益消融（A-A 皇帝 -1，真 identity，min-ent 0.5）
+
+| seed | p | q | q-p | win | ret | 弱平稳 |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 42 | 0.206 | 0.244 | +0.038 | 0.800 | +0.599 | ❌（Δq=-0.063） |
+| 43 | 0.213 | 0.270 | +0.057 | 0.803 | +0.607 | ✅ |
+| 44 | 0.203 | 0.251 | +0.048 | 0.798 | +0.595 | ❌（Δq=-0.082） |
+| 均值 | 0.207 | 0.255 | **+0.047** | 0.800 | +0.600 | 1/3 |
+
+- **预测核验**：预测「对称收益下 q-p 若仍为正，则 q-p 不是 +1/-5 量级不对称所致」。
+  实际 q-p 三 seed 均为正（均值 +0.047）→ **量级不对称不是 q-p 的必要条件**。
+- q-p 与 run06_curv（真 identity、-5 收益）的 +0.063 相比无统计差异（n=3 vs 2，
+  t 检验 p≈0.12）；说明 q-p 更可能来自两个独立网络/状态表征不对称/PPO 正负奖励
+  动力学，而非 +1/-5 量级。
+- **注意**：3 runs 仅 1 个通过弱平稳门；seed42/44 的 Δq 仍为 -0.06~-0.08，
+  q 在末段缓慢下漂。结果应视为方向性证据，不宜作为最终吸引子。
+  已安排 run10_sym 补 seeds 并延长观测。
+
+### 5.4 run08_ref：概率权重 ref 模式（α=β=0.88，min-ent 0.5，2 seeds）
+
+| τ | p | q | win | ret | 弱平稳 |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| 0.5 | 0.215 | 0.275 | 0.803 | -0.184 | 2/2 |
+| 1.0 | 0.207 | 0.255 | 0.801 | -0.194 | 2/2 |
+
+- **预测核验**：预测「ref 模式切断反馈环后，若 τ 出现单调效应，则 window 模式
+  此前掩盖了 τ 效应」。实际 q 随 τ 升高而下降（0.275→0.255，Δ≈-0.020），
+  方向与「τ↑→q↓」一致；但 n=2，t 检验 p≈0.18，仅方向性证据。
+- 对照 run06 window 模式（q 对 τ 无梯度）与 run03 旧数据（τ↑→q↓），
+  ref 模式的结果更接近旧 window 结果；反馈环假说未被证伪，但证据不足。
+  已安排 run10_ref 补 seeds。
+
+### 5.5 run09_asym：非对称 λ（皇帝 λ=5，奴隶 λ=2.25，α=β=0.88，min-ent 0.5）
+
+| seed | p | q | win | ret | 弱平稳 |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| 42 | 0.186 | 0.237 | 0.790 | -0.260 | ✅ |
+| 43 | 0.193 | 0.256 | 0.801 | -0.196 | ✅ |
+| 均值 | 0.190 | 0.246 | 0.795 | -0.228 | 2/2 |
+
+- **预测核验**：预测「奴隶 λ=2.25 会放大奴隶损失，使 q 低于对称对照
+  （run06 λ5τ1 q≈0.235）」。实际 q=0.246，方向与预测相反；与 run06 对照的
+  q 差 +0.011（n=2 vs 5，t 检验 p≈0.44），不能区分效应与噪声。
+- **结论**：未发现奴隶侧 λ 对 q 的降低效应；非对称 λ 方向建议降为低优先级。
+
 ## 6. 证据边界与下一步
 
 ### 证据边界
 
 - 模拟侧结论覆盖：λ×τ×αβ 网格、5 seeds、400k 预算、min-ent 0.5、window 权重模式。
-- 未覆盖：ref 模式、非对称 λ、对称收益消融——三者的代码与预测已就绪，
-  待另一台电脑训练（§7）；更长预算、更多 seeds 亦未覆盖。
+- run07_sym/run08_ref/run09_asym 已完成（§5.3–§5.5），但 run07_sym 仅 1/3 弱平稳、
+  run08_ref 每组仅 2 seeds，run09_asym 每组仅 2 seeds。
+- 更长预算、更多 seeds 未覆盖；run10_sym/run10_ref 为已设计的补充实验（§7）。
 - 无人类数据；“现实均衡”仍是模拟侧假设。
 
 ### 下一步
 
 1. 阶段 5 人类数据（10×100 局）。
-2. 在另一台电脑运行 run07_sym/run08_ref/run09_asym 并纳入本文件。
-3. 阶段 2/3/4 代码的“凭记忆重写”欠账：**已完成**（另一台电脑重写并通过验证门）。
+2. 运行 run10_sym / run10_ref 补 seeds（命令见 §7），将 run07_sym 与 run08_ref
+   的 n 补齐到 5。
+3. 阶段 2/3/4 代码的“凭记忆重写”欠账：**已完成**。
 
-## 7. 待训练实验命令（另一台电脑执行）
+## 7. 下一步实验命令（run10_sym / run10_ref）
 
 Windows 一键脚本：`train_all_next.bat [steps]`（默认 400000）。
 
-> 代码已支持以下参数：`--reward-loss`、`--slave-lam`、`--weight-mode ref`、
-> `--predictions-file`、`--conv-std`、`--min-ent`、`--alpha/--beta`。
-> 运行前先写预测文件；`sweep.py` 会把预测写入 run 目录并归档。
-
 ```bash
-# 对称收益消融：A-A 皇帝损失从 -5 改为 -1，真 identity，min-ent 0.5
-python sweep.py --name run07_sym --cells "1-1.0" --seeds "42,43,44" \
-  --steps 400000 --min-ent 0.5 --alpha 1.0 --beta 1.0 \
-  --reward-loss -1 --predictions-file predictions/run07_sym.json
+# run10_sym：对称收益消融补 seeds 45,46（与 run07_sym 合并后 n=5）
+python sweep.py --name run10_sym --cells "1-1.0" --seeds "45,46"   --steps 400000 --min-ent 0.5 --alpha 1.0 --beta 1.0   --reward-loss -1 --predictions-file predictions/run10_sym.json
 
-# 概率权重 ref 模式：切断策略反馈环，检查 τ 效应是否被 window 反馈环掩盖
-python sweep.py --name run08_ref --cells "1-0.5,1-1.0" --seeds "42,43" \
-  --steps 400000 --min-ent 0.5 --weight-mode ref \
-  --predictions-file predictions/run08_ref.json
-
-# 非对称 λ：皇帝 λ=5，奴隶 λ=2.25
-python sweep.py --name run09_asym --cells "5-1.0" --seeds "42,43" \
-  --steps 400000 --min-ent 0.5 --alpha 0.88 --beta 0.88 \
-  --slave-lam 2.25 --predictions-file predictions/run09_asym.json
+# run10_ref：ref 模式补 seeds 44,45,46（与 run08_ref 合并后 n=5）
+python sweep.py --name run10_ref --cells "1-0.5,1-1.0" --seeds "44,45,46"   --steps 400000 --min-ent 0.5 --weight-mode ref   --predictions-file predictions/run10_ref.json
 ```
 
-建议总预算：run07_sym 3 runs + run08_ref 4 runs + run09_asym 2 runs = 9 runs × 400k。
 如果 `runs.jsonl` 已存在同 (λ, τ, seed) 记录，`sweep.py` 会跳过该运行；
 重跑请删除对应 `data/runs/<name>/runs.jsonl` 或更换 `--name`。

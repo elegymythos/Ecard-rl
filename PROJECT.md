@@ -52,7 +52,7 @@ python sweep.py --demo
 python sweep.py --steps 400000 --min-ent 0.5
 ```
 
-Windows 一键训练脚本：`train_all_next.bat`（先跑验证门，再顺序执行 run07_sym/run08_ref/run09_asym）。
+Windows 一键训练脚本：`train_all_next.bat`（先跑验证门，再顺序执行 run10_sym/run10_ref 补 seeds）。
 
 补充实验（代码已支持，命令见 results.md §7）：`--reward-loss -1`（对称收益消融）、
 `--slave-lam 2.25`（非对称 λ）、`--weight-mode ref`（反馈环隔离）、
