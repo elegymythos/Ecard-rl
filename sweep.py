@@ -275,23 +275,27 @@ def main():
         })
 
     # 预测核验（预测写在跑之前，这里是事后对照）
-    p_min_l = np.mean([c["final_p"] for c in cells if c["lambda"] == min(lambdas)])
-    p_max_l = np.mean([c["final_p"] for c in cells if c["lambda"] == max(lambdas)])
-    q_min_t = np.mean([c["final_q"] for c in cells if c["tau"] == min(taus)])
-    q_max_t = np.mean([c["final_q"] for c in cells if c["tau"] == max(taus)])
-    d_min_t = np.mean([abs(c["final_q"] - 0.5) for c in cells if c["tau"] == min(taus)])
-    d_max_t = np.mean([abs(c["final_q"] - 0.5) for c in cells if c["tau"] == max(taus)])
+    # 修（2026-08-16）：--cells 部分网格只覆盖部分 λ/τ 时，min/max 必须用
+    # 实际出现的值，否则空切片产生 NaN（Mean of empty slice 警告）。
+    present_l = sorted({c["lambda"] for c in cells})
+    present_t = sorted({c["tau"] for c in cells})
+    p_min_l = np.mean([c["final_p"] for c in cells if c["lambda"] == present_l[0]])
+    p_max_l = np.mean([c["final_p"] for c in cells if c["lambda"] == present_l[-1]])
+    q_min_t = np.mean([c["final_q"] for c in cells if c["tau"] == present_t[0]])
+    q_max_t = np.mean([c["final_q"] for c in cells if c["tau"] == present_t[-1]])
+    d_min_t = np.mean([abs(c["final_q"] - 0.5) for c in cells if c["tau"] == present_t[0]])
+    d_max_t = np.mean([abs(c["final_q"] - 0.5) for c in cells if c["tau"] == present_t[-1]])
     # 中位数版核验：均值被双峰 seed 污染，中位数是更稳的对照
-    p_med_min = np.median([c["final_p_median"] for c in cells if c["lambda"] == min(lambdas)])
-    p_med_max = np.median([c["final_p_median"] for c in cells if c["lambda"] == max(lambdas)])
-    q_med_min = np.median([c["final_q_median"] for c in cells if c["tau"] == min(taus)])
-    q_med_max = np.median([c["final_q_median"] for c in cells if c["tau"] == max(taus)])
-    d_med_min = np.median([abs(c["final_q_median"] - 0.5) for c in cells if c["tau"] == min(taus)])
-    d_med_max = np.median([abs(c["final_q_median"] - 0.5) for c in cells if c["tau"] == max(taus)])
+    p_med_min = np.median([c["final_p_median"] for c in cells if c["lambda"] == present_l[0]])
+    p_med_max = np.median([c["final_p_median"] for c in cells if c["lambda"] == present_l[-1]])
+    q_med_min = np.median([c["final_q_median"] for c in cells if c["tau"] == present_t[0]])
+    q_med_max = np.median([c["final_q_median"] for c in cells if c["tau"] == present_t[-1]])
+    d_med_min = np.median([abs(c["final_q_median"] - 0.5) for c in cells if c["tau"] == present_t[0]])
+    d_med_max = np.median([abs(c["final_q_median"] - 0.5) for c in cells if c["tau"] == present_t[-1]])
     # 修：均匀随机的度量改用初始状态策略熵（均匀 = ln2 ≈ 0.6931）
     ln2 = math.log(2.0)
-    e_med_min = np.median([ln2 - c["ent_s_init_median"] for c in cells if c["tau"] == min(taus)])
-    e_med_max = np.median([ln2 - c["ent_s_init_median"] for c in cells if c["tau"] == max(taus)])
+    e_med_min = np.median([ln2 - c["ent_s_init_median"] for c in cells if c["tau"] == present_t[0]])
+    e_med_max = np.median([ln2 - c["ent_s_init_median"] for c in cells if c["tau"] == present_t[-1]])
     summary = {
         "predictions": PREDICTIONS,
         "meta": {
