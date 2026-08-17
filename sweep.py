@@ -32,9 +32,10 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import torch.nn as nn
 
 from env import ECardEnv, EnvConfig
-from ppo import Agent, collect_rollout, first_round_stats, update_policy
+from ppo import Agent, SharedTrunkAgent, collect_rollout, first_round_stats, update_policy
 from utility import make_prospect
 
 LAMBDAS = [1.0, 2.0, 3.0, 5.0]
@@ -88,7 +89,9 @@ def run_config(lam: float, tau: float, seed: int, *, steps: int,
                weight_mode: str, conv_tol: float, conv_std: float,
                alpha: float, beta: float, reward_loss: float = -5.0,
                slave_lam: float = 1.0, swap_roles: bool = False,
-               shared_policy: bool = False, save_agents: bool = False,
+               shared_policy: bool = False, same_init: bool = False,
+               update_order: str = "emperor_first", shared_trunk: bool = False,
+               adv_norm: bool = False, save_agents: bool = False,
                save_dir: Path | None = None) -> dict:
     """单格子单 seed 的自博弈训练，返回最终指标。
 
@@ -98,6 +101,11 @@ def run_config(lam: float, tau: float, seed: int, *, steps: int,
         更新顺序造成的持久不对称（应配合真 identity 使用）。
     shared_policy：皇帝/奴隶共享同一网络与优化器（分别用各自 buffer 更新），
         构造性检验 q-p 是否需要两个独立网络。
+    same_init：两个独立网络用相同初始化（同 seed 各建一次），检验 q-p 是否来自初始化差异。
+    update_order："emperor_first"（默认）/ "slave_first" / "random"，
+        检验固定更新顺序是否造成 q-p。
+    shared_trunk：共享躯干 + 独立 actor/critic head，检验“共享表征”而非“共享策略”的效果。
+    adv_norm：是否标准化优势（默认关；旧实现的可疑元凶）。
     save_agents：训练结束后保存 agent 权重到 <save_dir>/checkpoints/，供 evaluate.py 分析。
     """
     t0 = time.time()
@@ -109,6 +117,34 @@ def run_config(lam: float, tau: float, seed: int, *, steps: int,
         agents = {"emperor": shared, "slave": shared}
         opt = torch.optim.Adam(shared.parameters(), lr=lr)
         optimizers = {"emperor": opt, "slave": opt}
+    elif shared_trunk:
+        trunk = nn.Sequential(
+            nn.Linear(5, 64), nn.Tanh(),
+            nn.Linear(64, 64), nn.Tanh(),
+        )
+        e_actor = nn.Linear(64, 2)
+        e_critic = nn.Linear(64, 1)
+        s_actor = nn.Linear(64, 2)
+        s_critic = nn.Linear(64, 1)
+        agents = {
+            "emperor": SharedTrunkAgent(trunk, e_actor, e_critic),
+            "slave": SharedTrunkAgent(trunk, s_actor, s_critic),
+        }
+        optimizers = {
+            "emperor": torch.optim.Adam(
+                list(trunk.parameters()) + list(e_actor.parameters()) + list(e_critic.parameters()),
+                lr=lr),
+            "slave": torch.optim.Adam(
+                list(trunk.parameters()) + list(s_actor.parameters()) + list(s_critic.parameters()),
+                lr=lr),
+        }
+    elif same_init:
+        torch.manual_seed(seed)
+        e = Agent()
+        torch.manual_seed(seed)
+        s = Agent()
+        agents = {"emperor": e, "slave": s}
+        optimizers = {k: torch.optim.Adam(agents[k].parameters(), lr=lr) for k in agents}
     else:
         agents = {"emperor": Agent(), "slave": Agent()}
         optimizers = {k: torch.optim.Adam(agents[k].parameters(), lr=lr) for k in agents}
@@ -127,10 +163,16 @@ def run_config(lam: float, tau: float, seed: int, *, steps: int,
     for _ in range(n_updates):
         buffers, stats = collect_rollout(env, agents, utilities, rollout,
                                          gamma=0.99, lam=0.95)
-        for name in agents:
+        if update_order == "slave_first":
+            order = ["slave", "emperor"]
+        elif update_order == "random":
+            order = ["emperor", "slave"] if np.random.rand() < 0.5 else ["slave", "emperor"]
+        else:
+            order = ["emperor", "slave"]
+        for name in order:
             update_policy(agents[name], optimizers[name], buffers[name],
                           gamma=0.99, lam=0.95, clip_eps=0.2, ent_coef=ent_coef,
-                          adv_norm=False, epochs=epochs, batch_size=batch,
+                          adv_norm=adv_norm, epochs=epochs, batch_size=batch,
                           ret_norm=ret_norm, min_ent=min_ent)
         if swap_roles:
             agents["emperor"], agents["slave"] = agents["slave"], agents["emperor"]
@@ -165,7 +207,9 @@ def run_config(lam: float, tau: float, seed: int, *, steps: int,
             "reward_loss": reward_loss, "slave_lam": slave_lam,
             "alpha": alpha, "beta": beta, "weight_mode": weight_mode,
             "min_ent": min_ent, "swap_roles": swap_roles,
-            "shared_policy": shared_policy,
+            "shared_policy": shared_policy, "same_init": same_init,
+            "update_order": update_order, "shared_trunk": shared_trunk,
+            "adv_norm": adv_norm,
         }
         torch.save(
             {"agents": {name: agents[name].state_dict() for name in agents},
@@ -176,6 +220,8 @@ def run_config(lam: float, tau: float, seed: int, *, steps: int,
         "lambda": lam, "tau": tau, "seed": seed,
         "reward_loss": reward_loss, "slave_lam": slave_lam,
         "swap_roles": swap_roles, "shared_policy": shared_policy,
+        "same_init": same_init, "update_order": update_order,
+        "shared_trunk": shared_trunk, "adv_norm": adv_norm,
         "final_p": hist["p"][-1], "final_q": hist["q"][-1],  # 与 run01 兼容的旧字段
         "p": p_mean, "q": q_mean, "p_std": p_std, "q_std": q_std,
         "p_tail_range": p_tail_range, "q_tail_range": q_tail_range,
@@ -261,7 +307,7 @@ def main():
     ap.add_argument("--min-ent", type=float, default=0.0,
                     help="最小熵约束（>0 时加 hinge 惩罚，防策略塌缩）")
     ap.add_argument("--ret-norm", action="store_true",
-                    help="优势+回报标准化（心理运行奖励尺度大时的稳定性开关）")
+                    help="只标准化 returns（TD 目标），不标准化 advantages；优势标准化请用 adv_norm")
     ap.add_argument("--weight-mode", choices=["window", "ref", "off"], default="window",
                     help="奴隶概率权重：window=滑动窗口（策略反馈环）/ ref=固定参考概率 / off=无")
     ap.add_argument("--alpha", type=float, default=0.88,
@@ -284,6 +330,15 @@ def main():
                     help="每轮更新后交换 emperor/slave 网络与优化器，消除角色标签/更新顺序的持久不对称")
     ap.add_argument("--shared-policy", action="store_true",
                     help="皇帝/奴隶共享同一网络与优化器（分别用各自 buffer 更新）")
+    ap.add_argument("--same-init", action="store_true",
+                    help="两个独立网络使用相同初始化（同 seed 各建一次）")
+    ap.add_argument("--update-order", choices=["emperor_first", "slave_first", "random"],
+                    default="emperor_first",
+                    help="每轮更新的角色顺序：emperor_first（默认）/ slave_first / random")
+    ap.add_argument("--shared-trunk", action="store_true",
+                    help="共享躯干 + 独立 actor/critic head（区别于完整 shared-policy）")
+    ap.add_argument("--adv-norm", action="store_true",
+                    help="标准化优势（默认关；旧实现的可疑元凶）")
     ap.add_argument("--save-agents", action="store_true",
                     help="每 run 结束后保存 agents.pt 到 <out_dir>/checkpoints/，供 evaluate.py 使用")
     ap.add_argument("--predictions-file", default=None,
@@ -291,6 +346,12 @@ def main():
     args = ap.parse_args()
     if args.swap_roles and args.shared_policy:
         ap.error("--swap-roles 与 --shared-policy 不能同时使用")
+    if args.swap_roles and args.shared_trunk:
+        ap.error("--swap-roles 与 --shared-trunk 不能同时使用（机制混淆）")
+    if args.shared_policy and args.shared_trunk:
+        ap.error("--shared-policy 与 --shared-trunk 不能同时使用")
+    if args.shared_policy and args.same_init:
+        ap.error("--shared-policy 与 --same-init 不能同时使用")
 
     sweep_dir = Path("data/sweep")
     out_dir = sweep_dir if args.name is None else Path("data/runs") / args.name
@@ -350,6 +411,8 @@ def main():
                              alpha=args.alpha, beta=args.beta,
                              reward_loss=args.reward_loss, slave_lam=args.slave_lam,
                              swap_roles=args.swap_roles, shared_policy=args.shared_policy,
+                             same_init=args.same_init, update_order=args.update_order,
+                             shared_trunk=args.shared_trunk, adv_norm=args.adv_norm,
                              save_agents=args.save_agents, save_dir=out_dir)
             rec_log = {k: v for k, v in rec.items()
                        if k not in ("p_series", "q_series")}
@@ -428,6 +491,10 @@ def main():
             "slave_lam": args.slave_lam,
             "swap_roles": args.swap_roles,
             "shared_policy": args.shared_policy,
+            "same_init": args.same_init,
+            "update_order": args.update_order,
+            "shared_trunk": args.shared_trunk,
+            "adv_norm": args.adv_norm,
             "save_agents": args.save_agents,
             "seeds": seeds,
             "started_at": started_at,

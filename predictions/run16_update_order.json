@@ -1,0 +1,4 @@
+{
+  "update_order_slave_first": "若 q-p 来自固定 emperor-first 更新顺序，则 slave-first 下 q-p 应反号或消失。",
+  "update_order_random": "若 q-p 来自固定相位，则随机更新顺序应使 q-p 趋近 0 或大幅缩小。"
+}

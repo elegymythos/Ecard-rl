@@ -52,6 +52,40 @@ class Agent(nn.Module):
         return float(self.critic_head(self.fc(obs_t)).item())
 
 
+class SharedTrunkAgent(nn.Module):
+    """共享躯干 + 每个角色独立的 actor/critic head。
+
+    用于“共享躯干独立头”消融：两个 agent 共享 fc 特征提取，但各自的策略头
+    与价值头独立。这样能区分“共享表征”与“共享策略”对 q-p/均衡接近度的影响。
+    """
+
+    def __init__(self, fc: nn.Module, actor_head: nn.Linear, critic_head: nn.Linear):
+        super().__init__()
+        self.fc = fc
+        self.actor_head = actor_head
+        self.critic_head = critic_head
+
+    def forward(self, obs: torch.Tensor):
+        h = self.fc(obs)
+        return self.actor_head(h), self.critic_head(h)
+
+    @torch.no_grad()
+    def act(self, obs: np.ndarray, mask: torch.Tensor | None = None):
+        obs_t = torch.as_tensor(obs, dtype=torch.float32).unsqueeze(0)
+        logits, value = self.forward(obs_t)
+        if mask is not None:
+            logits = logits + mask
+        dist = Categorical(logits=logits)
+        action = dist.sample()
+        return (int(action.item()), dist.log_prob(action).item(),
+                float(value.item()), dist.probs.squeeze(0).numpy())
+
+    @torch.no_grad()
+    def value(self, obs: np.ndarray) -> float:
+        obs_t = torch.as_tensor(obs, dtype=torch.float32).unsqueeze(0)
+        return float(self.critic_head(self.fc(obs_t)).item())
+
+
 class Buffer:
     """单 agent 的 rollout buffer + GAE 计算。"""
 
@@ -82,8 +116,9 @@ class Buffer:
         """返回 (states, actions, old_logps, advantages, returns)。
 
         adv_norm：只标准化优势（旧结果的可疑元凶，identity 研究默认关）。
-        ret_norm：优势+回报一起标准化——心理运行的奖励尺度可能差一个数量级
-        （τ=0.1 时主观奖励可达 ±100），这是独立于 adv_norm 的稳定性开关。
+        ret_norm：只标准化 returns（TD 目标），不标准化 advantages；用于奖励尺度
+        相差一个数量级时的稳定性（τ=0.1 时主观奖励可达 ±100）。若要同时标准化
+        优势，需要显式开 adv_norm。
         """
         states = torch.as_tensor(np.stack(self.states), dtype=torch.float32)
         actions = torch.as_tensor(np.array(self.actions), dtype=torch.long)

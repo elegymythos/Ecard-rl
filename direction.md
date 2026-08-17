@@ -21,7 +21,7 @@
 | 1 | env.py + test_env.py | ✅ 完成 | 8/8 测试通过；非法动作 fail loud |
 | 2 | solver.py | ✅ 完成（已凭记忆重写） | 单轮 1/7；V_4=-0.2；p_k=1/(k+1)；W=0.8 |
 | 3 | utility.py + ppo.py + train.py | ✅ 完成（已凭记忆重写） | identity 下 p̂/q̂ 对照均衡 (0.2,0.2) |
-| 4 | sweep.py + 网格扫描 | ✅ run06/run07_sym/run08_ref/run09_asym/run10_sym/run10_ref/run11_identity/run12_roleswap/run13_shared/run14_identity_lambda 已完成；⬜ run11_minent 待跑 | λ×τ 网格 × 5 seeds；预测先写 |
+| 4 | sweep.py + 网格扫描 | ✅ run06–run14 与 run11_minent 均已完成；⬜ run15_same_init / run16_update_order / run17_shared_trunk / run18_advnorm / run19_long 已排入 `train_all_next.fish` | λ×τ 网格 × 5 seeds；预测先写 |
 | 5 | 人类对局数据 | ⬜ 待做 | 10 人 × 100 局，记录每轮出牌 |
 | 6 | results.md | ✅ 已定稿（后续补充实验将追加修订） | 每行：预测 → 实际 → 解释 |
 
@@ -63,10 +63,14 @@
 - run08_ref + run10_ref（概率权重 ref 模式，5 seeds）：τ 位置效应消失（配对 p≈0.37），run08_ref 的 2-seed 方向性结论是噪声。
 - run09_asym（非对称 λ）：已完成，未发现奴隶 λ=2.25 对 q 的降低效应。
 - run11_identity（真 identity n=5）：已完成，q-p=+0.052（5/5 为正），逐层接近均衡。
-- run12_roleswap（训练中每轮交换）：已完成但 0/5 收敛，不可解释；机制改用事后 `--swap-eval`。
+- run12_roleswap（训练中每轮交换）：已完成但 0/5 收敛，不可解释；事后 `--swap-eval`
+  反号是恒等式，不能作为 q-p 机制证据。
 - run13_shared（共享网络）：已完成，p=q≈0.50（构造性），但不收敛到均衡。
-- run14_identity_lambda（真 identity λ 轴）：已完成，λ↑→p↓ 仍成立（-0.015）。
-- 待跑：run11_minent（min-ent 敏感性）。
+- run14_identity_lambda（真 identity λ 轴）：已完成，λ↑→p↓ 方向为负但单独不显著（🟡）。
+- run11_minent（min-ent 敏感性）：已完成。**min-ent 0.5 不是中性稳定器**：
+  0.55/0.60 时 λ=1 的 q 升至 0.358/0.407，q-p 升至 0.159/0.205，落点强烈依赖正则化。
+- 主观 Nash 不变性：当前效用层下 p_k=q_k=1/(k+1) 与 λ/α/β/ref 常数权重无关，
+  详见 results.md §2.1。
 
 ## 6. 文件结构
 
@@ -82,3 +86,5 @@
 - `results.md`：阶段 6 结果定稿。
 - `debug/`：逐日修复与审计记录（历史日志）。
 - `data/runs/`：正式运行归档。
+- `train_all_next.bat`：Windows 一键训练脚本（历史）。
+- `train_all_next.fish`：Linux/macOS fish 一键训练脚本（剩余机制实验）。

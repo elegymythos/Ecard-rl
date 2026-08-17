@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import random
 import statistics as st
 from collections import defaultdict
@@ -118,9 +119,18 @@ def paired_permutation_p(a, b, n=200000, seed=0):
 
 
 def sign_test_p(n_pos: int, n_total: int, two_sided=True) -> float:
-    """所有 n_pos 个都同号的二项检验。"""
-    one = 0.5 ** n_total
-    return 2.0 * one if two_sided else one
+    """二项符号检验。
+
+    n_pos = 正向个数；返回在 H0:p=0.5 下观察到至少 max(n_pos, n_total-n_pos)
+    个同号的概率。two_sided=True 时按常见保守做法取单侧的两倍（上限 1）。
+    """
+    if n_total <= 0:
+        return 1.0
+    k = max(n_pos, n_total - n_pos)
+    one = sum(math.comb(n_total, i) for i in range(k, n_total + 1)) * (0.5 ** n_total)
+    if two_sided:
+        return min(1.0, 2.0 * one)
+    return one
 
 
 def _fmt(x: float, nd=4) -> str:
@@ -305,8 +315,18 @@ def report_identity_lambda() -> None:
 
 
 def report_minent() -> None:
-    levels = [("0.45", "run11_minent_m045"), ("0.55", "run11_minent_m055"), ("0.60", "run11_minent_m060")]
+    levels = [("0.45", "run11_minent_m0.45"), ("0.55", "run11_minent_m0.55"), ("0.60", "run11_minent_m0.60")]
     found = False
+    if has_run("run06"):
+        base = load_runs("run06")
+        print("\n" + "-" * 70)
+        print("run06 基线（min-ent 0.5）")
+        for lam in (1.0, 5.0):
+            rs = [r for r in base if r["lambda"] == lam and r["tau"] == 1.0]
+            if rs:
+                print(f"  λ={lam:g}: n={len(rs)}, p={_fmt(mean([r['p'] for r in rs]))}, "
+                      f"q={_fmt(mean([r['q'] for r in rs]))}, q-p={_fmt(mean([r['q']-r['p'] for r in rs]))}, "
+                      f"weak={sum(weak(r) for r in rs)}")
     for label, name in levels:
         if not has_run(name):
             continue
@@ -328,6 +348,37 @@ def report_minent() -> None:
         print("\n[run11_minent] 未运行，跳过")
 
 
+def report_remaining() -> None:
+    names = [
+        "run15_same_init",
+        "run16_update_order_slave_first",
+        "run16_update_order_random",
+        "run17_shared_trunk",
+        "run18_advnorm_lambda",
+        "run19_long",
+    ]
+    for name in names:
+        if not has_run(name):
+            continue
+        rows = load_runs(name)
+        print("\n" + "=" * 70)
+        print(name)
+        print("=" * 70)
+        print(f"n={len(rows)}, weak={sum(weak(r) for r in rows)}")
+        if len({r["lambda"] for r in rows}) > 1:
+            for lam in sorted({r["lambda"] for r in rows}):
+                rs = [r for r in rows if r["lambda"] == lam]
+                print(f"λ={lam:g}: p={_fmt(mean([r['p'] for r in rs]))}, "
+                      f"q={_fmt(mean([r['q'] for r in rs]))}, "
+                      f"q-p={_fmt(mean([r['q']-r['p'] for r in rs]))}, "
+                      f"weak={sum(weak(r) for r in rs)}")
+        else:
+            print(f"p={_fmt(mean([r['p'] for r in rows]))}, "
+                  f"q={_fmt(mean([r['q'] for r in rows]))}, "
+                  f"q-p={_fmt(mean([r['q']-r['p'] for r in rows]))}, "
+                  f"win={_fmt(mean([r['win_rate'] for r in rows]))}")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--all", action="store_true")
@@ -340,11 +391,12 @@ def main() -> None:
     ap.add_argument("--shared", action="store_true")
     ap.add_argument("--identity-lambda", action="store_true")
     ap.add_argument("--minent", action="store_true")
+    ap.add_argument("--remaining", action="store_true")
     args = ap.parse_args()
 
     if not (args.all or args.run06 or args.sym or args.ref or args.compare_sym_curv
             or args.identity or args.roleswap or args.shared
-            or args.identity_lambda or args.minent):
+            or args.identity_lambda or args.minent or args.remaining):
         ap.error("请至少指定一个分析项，或使用 --all")
 
     if args.all or args.run06:
@@ -365,6 +417,8 @@ def main() -> None:
         report_identity_lambda()
     if args.all or args.minent:
         report_minent()
+    if args.all or args.remaining:
+        report_remaining()
 
 
 if __name__ == "__main__":

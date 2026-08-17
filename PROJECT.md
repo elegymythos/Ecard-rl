@@ -44,11 +44,13 @@
 - run07_sym + run10_sym：对称收益下 q-p 5/5 为正（+0.049），但仅 2/5 弱平稳。
 - run08_ref + run10_ref：ref 模式下 τ 无位置效应（5 seeds，配对 p≈0.37）。
 - run11_identity：真 identity 下 q-p=+0.052（5/5 为正），逐层接近均衡。
-- run12_roleswap：训练式消融失败（0/5 收敛）；事后 `--swap-eval` 显示 q-p 随网络交换反号，说明 q-p 是网络身份不对称。
+- run12_roleswap：训练式消融失败（0/5 收敛）；事后 `--swap-eval` 反号是恒等式，不作为机制证据。
 - run13_shared：共享网络 p=q≈0.50，5/5 弱平稳但不收敛到均衡。
-- run14_identity_lambda：真 identity 下 λ↑→p↓ 仍成立（-0.015）。
+- run14_identity_lambda：真 identity 下 λ↑→p↓ 方向为负但单独不显著（🟡）。
+- run11_minent：**min-ent 0.5 不是中性稳定器**；0.55/0.60 时 λ=1 的 q 升至 0.358/0.407，
+  q-p 升至 0.159/0.205。
 - run05 及更早的“收敛”结论全部作废（旧判据对极限环失明）。
-- 待跑（命令见 `train_all_next.bat` [5] 节）：run11_minent。
+- 主观 Nash 不变性：当前效用层下均衡策略与 λ/α/β/ref 常数权重无关，见 results.md §2.1。
 
 ## 5. 运行
 
@@ -61,10 +63,12 @@ python sweep.py --demo
 python sweep.py --steps 400000 --min-ent 0.5
 ```
 
-Windows 一键训练脚本：`train_all_next.bat [steps]`（先跑验证门，再顺序执行
-run11_identity / run12_roleswap / run13_shared / run14_identity_lambda / run11_minent，
-最后运行 `analyze.py --all` 与 `evaluate.py`）。当前 run11_identity/run12/13/14 已完成，
-剩余 run11_minent 可直接用该脚本的 [5] 节单独执行。
+训练脚本：
+- Windows：`train_all_next.bat [steps]`（历史脚本，已跑完 run11–run14 与 run11_minent）。
+- Linux/macOS（fish）：`fish train_all_next.fish [steps]`，用于剩余机制实验：
+  run15_same_init / run16_update_order_slave_first / run16_update_order_random /
+  run17_shared_trunk / run18_advnorm_lambda / run19_long，跑完后自动执行
+  `analyze.py --all` 与 `evaluate.py --swap-eval --save`。
 
 补充实验（代码已支持）：`--reward-loss -1`（对称收益消融）、`--slave-lam 2.25`（非对称 λ）、
 `--weight-mode ref`（反馈环隔离）、`--swap-roles`（角色交换消融）、
@@ -74,7 +78,8 @@ run11_identity / run12_roleswap / run13_shared / run14_identity_lambda / run11_m
 
 - 阶段 2/3/4 的初版代码已由项目所有者凭记忆重写，并通过同一套验证门。
 - 模拟结论仅覆盖 λ×τ×αβ 网格、5 seeds、400k 预算、min-ent 0.5、window 权重模式。
-- run11_identity/run13_shared/run14_identity_lambda 已完成并分析；run12_roleswap
-  训练式消融失败，机制改用事后 `--swap-eval`；run11_minent（min-ent 敏感性）尚未运行，
-  因此 min-ent 0.5 的主混淆仍未直接检验。
+- run11_identity/run11_minent/run13_shared/run14_identity_lambda 已完成并分析；
+  run12_roleswap 训练式消融失败，`--swap-eval` 不作为机制证据。
+- min-ent 敏感性显示落点强烈依赖 min-ent 强度，因此所有“PPO 落点”结论必须限定
+  在 min-ent=0.5；主观 Nash 不变性说明心理参数不移动均衡策略（见 results.md §2.1）。
 - 旧 README 数字是历史基线，不是当前结论。
