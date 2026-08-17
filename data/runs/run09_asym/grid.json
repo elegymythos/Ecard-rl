@@ -1,0 +1,156 @@
+{
+  "predictions": {
+    "asym_lambda_slave_q": "皇帝 λ=5、奴隶 λ=2.25（α=β=0.88）时，奴隶损失被放大，q 应低于对称对照（run06 λ5τ1 q≈0.235）；若 q 不降，则奴隶侧 λ 不影响落点"
+  },
+  "meta": {
+    "run_name": "run09_asym",
+    "steps_per_run": 400000,
+    "rollout": 2048,
+    "epochs": 2,
+    "batch_size": 128,
+    "lr": 0.0003,
+    "ent_coef": 0.01,
+    "min_ent": 0.5,
+    "ret_norm": false,
+    "adv_norm": false,
+    "weight_mode": "window",
+    "weight_ref_prob": 0.2,
+    "conv_tol": 0.05,
+    "conv_std": 0.1,
+    "alpha": 0.88,
+    "beta": 0.88,
+    "reward_loss": -5.0,
+    "slave_lam": 2.25,
+    "seeds": [
+      42,
+      43
+    ],
+    "started_at": "2026-08-16T14:16:08",
+    "git_commit_start": "1624c559a46b6a1d2e56c131c9ef64baf8b8e8dd",
+    "git_dirty_start": false,
+    "sweep_py_sha256_start": "c9415a88c820",
+    "git_commit_end": "1624c559a46b6a1d2e56c131c9ef64baf8b8e8dd",
+    "git_dirty_end": false,
+    "sweep_py_sha256_end": "c9415a88c820",
+    "encoding": "utf-8"
+  },
+  "check_lambda": {
+    "p_at_lambda_min": 0.1898,
+    "p_at_lambda_max": 0.1898,
+    "direction": "λ↑→p↓ 不成立"
+  },
+  "check_lambda_median": {
+    "p_median_at_lambda_min": 0.1898,
+    "p_median_at_lambda_max": 0.1898,
+    "direction": "λ↑→p↓ 不成立"
+  },
+  "check_tau": {
+    "q_at_tau_min": 0.2463,
+    "q_at_tau_max": 0.2463,
+    "dist_to_uniform_min_tau": 0.2537,
+    "dist_to_uniform_max_tau": 0.2537,
+    "direction": "τ↑→均匀 不成立"
+  },
+  "check_tau_median": {
+    "q_median_at_tau_min": 0.2463,
+    "q_median_at_tau_max": 0.2463,
+    "dist_to_uniform_min_tau": 0.2537,
+    "dist_to_uniform_max_tau": 0.2537,
+    "direction": "τ↑→均匀 不成立"
+  },
+  "check_tau_entropy": {
+    "note": "均匀随机 = 初始状态策略熵 ln2≈0.6931；距离 = ln2 - 熵",
+    "dist_uniform_median_at_tau_min": 0.1512,
+    "dist_uniform_median_at_tau_max": 0.1512,
+    "direction": "τ↑→均匀 不成立"
+  },
+  "cells": [
+    {
+      "lambda": 5.0,
+      "tau": 1.0,
+      "n_seeds": 2,
+      "final_p": 0.18975151903354204,
+      "final_q": 0.24634396590483493,
+      "final_p_std": 0.003681517373292878,
+      "final_q_std": 0.00952482662903957,
+      "final_p_median": 0.18975151903354204,
+      "final_q_median": 0.24634396590483493,
+      "win_rate": 0.7953385312772343,
+      "obj_return": -0.22796881233659433,
+      "obj_return_std": 0.03188548822182223,
+      "ent_s_init_mean": 0.5419097340259796,
+      "ent_s_init_median": 0.5419097340259796
+    }
+  ],
+  "runs": [
+    {
+      "lambda": 5.0,
+      "tau": 1.0,
+      "seed": 42,
+      "reward_loss": -5.0,
+      "slave_lam": 2.25,
+      "final_p": 0.2050582617521286,
+      "final_q": 0.23258468508720398,
+      "p": 0.18607000166024917,
+      "q": 0.23681913927579537,
+      "p_std": 0.061895845110876146,
+      "q_std": 0.08223555921948998,
+      "p_tail_range": 0.25089844316244125,
+      "q_tail_range": 0.27968671917915344,
+      "win_rate": 0.7900242832402637,
+      "obj_return": -0.2598543005584166,
+      "obj_return_std": 0.19991842668515775,
+      "ent_e_init": 0.46827875956510884,
+      "ent_s_init": 0.5292569849735651,
+      "subj_std": {
+        "emperor": 6.271855166385211,
+        "slave": 1.8359800894363933
+      },
+      "drift_p": 0.002594562032474934,
+      "drift_q": -0.01697107762671432,
+      "converged": true,
+      "weakly_stationary": true,
+      "elapsed_s": 249.02
+    },
+    {
+      "lambda": 5.0,
+      "tau": 1.0,
+      "seed": 43,
+      "reward_loss": -5.0,
+      "slave_lam": 2.25,
+      "final_p": 0.17217779159545898,
+      "final_q": 0.3015817105770111,
+      "p": 0.19343303640683493,
+      "q": 0.2558687925338745,
+      "p_std": 0.05102003487699416,
+      "q_std": 0.07395664487840188,
+      "p_tail_range": 0.22773587703704834,
+      "q_tail_range": 0.3005705177783966,
+      "win_rate": 0.8006527793142048,
+      "obj_return": -0.1960833241147721,
+      "obj_return_std": 0.09533325100485546,
+      "ent_e_init": 0.48291637500127155,
+      "ent_s_init": 0.5545624830783942,
+      "subj_std": {
+        "emperor": 6.134595612445843,
+        "slave": 1.8102815731789796
+      },
+      "drift_p": 0.008840667561460763,
+      "drift_q": 0.008445143460845322,
+      "converged": true,
+      "weakly_stationary": true,
+      "elapsed_s": 247.29
+    }
+  ],
+  "n_converged": 2,
+  "n_weakly_stationary": 2,
+  "convergence_by_std": {
+    "0.15": 2,
+    "0.12": 2,
+    "0.1": 2,
+    "0.08": 1,
+    "0.06": 0,
+    "0.05": 0
+  },
+  "elapsed_s": 496.4
+}

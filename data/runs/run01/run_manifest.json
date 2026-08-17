@@ -1,0 +1,69 @@
+{
+  "run_id": "run01",
+  "archived_at": "2026-08-11T18:32:33",
+  "source": "data/sweep/grid.json + predictions.json + phase_diagram.png（2026-08-11 16:57 完成）",
+  "encoding": "原文件为 GBK，已转换为 UTF-8；sweep.py/train.py 已改为显式 encoding=\"utf-8\"",
+  "grid": {
+    "lambdas": [
+      1.0,
+      2.0,
+      3.0,
+      5.0
+    ],
+    "taus": [
+      0.1,
+      0.5,
+      1.0
+    ],
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "n_runs": 60,
+    "n_cells": 12,
+    "elapsed_s": 8076.4
+  },
+  "missing_metadata": [
+    "steps_per_run",
+    "rollout",
+    "epochs",
+    "batch_size",
+    "lr",
+    "start_time",
+    "code_version"
+  ],
+  "prediction_checks": {
+    "lambda": {
+      "p_at_lambda_min": 0.0979,
+      "p_at_lambda_max": 0.0133,
+      "direction": "λ↑→p↓ 成立"
+    },
+    "tau": {
+      "q_at_tau_min": 0.2489,
+      "q_at_tau_max": 0.2953,
+      "dist_to_uniform_min_tau": 0.2511,
+      "dist_to_uniform_max_tau": 0.2591,
+      "direction": "τ↑→均匀 不成立"
+    }
+  },
+  "key_findings": {
+    "near_equilibrium_runs": 0,
+    "q_at_tau_0.1_mean": 0.249,
+    "q_at_tau_0.1_std": 0.021,
+    "abs_drift_q_mean": 0.215,
+    "abs_drift_q_max": 0.777,
+    "weight_multiplier_example": {
+      "note": "τ=0.1、p_win=1/64 时胜事件的 w(p)/p 乘子",
+      "w_p": 0.398,
+      "multiplier": 25.5
+    }
+  },
+  "code_version": {
+    "git_commit": "33e7fe3ee2e2bc6cbb5330ba4d9b2d9fdef57eae",
+    "sweep_py_sha256": "65bb8d73bcef",
+    "ppo_py_sha256": "61e633fadb84"
+  }
+}

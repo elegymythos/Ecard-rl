@@ -1,0 +1,230 @@
+{
+  "predictions": {
+    "ref_mode_tau_effect": "ref 模式切断概率权重策略反馈环后，τ 对 q 的位置效应仍应接近 0；若出现单调效应，则 window 模式的反馈环此前掩盖了 τ 效应"
+  },
+  "meta": {
+    "run_name": "run08_ref",
+    "steps_per_run": 400000,
+    "rollout": 2048,
+    "epochs": 2,
+    "batch_size": 128,
+    "lr": 0.0003,
+    "ent_coef": 0.01,
+    "min_ent": 0.5,
+    "ret_norm": false,
+    "adv_norm": false,
+    "weight_mode": "ref",
+    "weight_ref_prob": 0.2,
+    "conv_tol": 0.05,
+    "conv_std": 0.1,
+    "alpha": 0.88,
+    "beta": 0.88,
+    "reward_loss": -5.0,
+    "slave_lam": 1.0,
+    "seeds": [
+      42,
+      43
+    ],
+    "started_at": "2026-08-16T14:00:46",
+    "git_commit_start": "1624c559a46b6a1d2e56c131c9ef64baf8b8e8dd",
+    "git_dirty_start": false,
+    "sweep_py_sha256_start": "c9415a88c820",
+    "git_commit_end": "1624c559a46b6a1d2e56c131c9ef64baf8b8e8dd",
+    "git_dirty_end": false,
+    "sweep_py_sha256_end": "c9415a88c820",
+    "encoding": "utf-8"
+  },
+  "check_lambda": {
+    "p_at_lambda_min": 0.2112,
+    "p_at_lambda_max": 0.2112,
+    "direction": "λ↑→p↓ 不成立"
+  },
+  "check_lambda_median": {
+    "p_median_at_lambda_min": 0.2112,
+    "p_median_at_lambda_max": 0.2112,
+    "direction": "λ↑→p↓ 不成立"
+  },
+  "check_tau": {
+    "q_at_tau_min": 0.2747,
+    "q_at_tau_max": 0.2551,
+    "dist_to_uniform_min_tau": 0.2253,
+    "dist_to_uniform_max_tau": 0.2449,
+    "direction": "τ↑→均匀 不成立"
+  },
+  "check_tau_median": {
+    "q_median_at_tau_min": 0.2747,
+    "q_median_at_tau_max": 0.2551,
+    "dist_to_uniform_min_tau": 0.2253,
+    "dist_to_uniform_max_tau": 0.2449,
+    "direction": "τ↑→均匀 不成立"
+  },
+  "check_tau_entropy": {
+    "note": "均匀随机 = 初始状态策略熵 ln2≈0.6931；距离 = ln2 - 熵",
+    "dist_uniform_median_at_tau_min": 0.1171,
+    "dist_uniform_median_at_tau_max": 0.1338,
+    "direction": "τ↑→均匀 不成立"
+  },
+  "cells": [
+    {
+      "lambda": 1.0,
+      "tau": 0.5,
+      "n_seeds": 2,
+      "final_p": 0.21545487546767944,
+      "final_q": 0.2747191534592555,
+      "final_p_std": 0.009318236166085958,
+      "final_q_std": 0.006572864376581611,
+      "final_p_median": 0.21545487546767944,
+      "final_q_median": 0.2747191534592555,
+      "win_rate": 0.8027320070026349,
+      "obj_return": -0.18360795798418988,
+      "obj_return_std": 0.006733223227220447,
+      "ent_s_init_mean": 0.5759987151011443,
+      "ent_s_init_median": 0.5759987151011443
+    },
+    {
+      "lambda": 1.0,
+      "tau": 1.0,
+      "n_seeds": 2,
+      "final_p": 0.20702147369201368,
+      "final_q": 0.2551254880351898,
+      "final_p_std": 0.003467035217162892,
+      "final_q_std": 0.006871186196804047,
+      "final_p_median": 0.20702147369201368,
+      "final_q_median": 0.2551254880351898,
+      "win_rate": 0.800937158328062,
+      "obj_return": -0.1943770500316278,
+      "obj_return_std": 0.013123995411670766,
+      "ent_s_init_mean": 0.5593436482625129,
+      "ent_s_init_median": 0.5593436482625129
+    }
+  ],
+  "runs": [
+    {
+      "lambda": 1.0,
+      "tau": 0.5,
+      "seed": 42,
+      "reward_loss": -5.0,
+      "slave_lam": 1.0,
+      "final_p": 0.1711762249469757,
+      "final_q": 0.23457178473472595,
+      "p": 0.20613663930159348,
+      "q": 0.2681462890826739,
+      "p_std": 0.044412526372385366,
+      "q_std": 0.06252155753236904,
+      "p_tail_range": 0.17238417267799377,
+      "q_tail_range": 0.25546514987945557,
+      "win_rate": 0.8016098031314316,
+      "obj_return": -0.19034118121141033,
+      "obj_return_std": 0.10911187202342179,
+      "ent_e_init": 0.5029413570196201,
+      "ent_s_init": 0.5715162540093447,
+      "subj_std": {
+        "emperor": 1.4285600974848636,
+        "slave": 1.6218282544182068
+      },
+      "drift_p": 0.005812345502468258,
+      "drift_q": -0.02545575673381484,
+      "converged": true,
+      "weakly_stationary": true,
+      "elapsed_s": 223.61
+    },
+    {
+      "lambda": 1.0,
+      "tau": 0.5,
+      "seed": 43,
+      "reward_loss": -5.0,
+      "slave_lam": 1.0,
+      "final_p": 0.1650717407464981,
+      "final_q": 0.28094515204429626,
+      "p": 0.2247731116337654,
+      "q": 0.2812920178358371,
+      "p_std": 0.052661303750871684,
+      "q_std": 0.07445491175345767,
+      "p_tail_range": 0.18559198081493378,
+      "q_tail_range": 0.25535179674625397,
+      "win_rate": 0.8038542108738383,
+      "obj_return": -0.17687473475696944,
+      "obj_return_std": 0.09024688828279046,
+      "ent_e_init": 0.5251292899633065,
+      "ent_s_init": 0.5804811761929438,
+      "subj_std": {
+        "emperor": 1.4421066822014037,
+        "slave": 1.6358249302569852
+      },
+      "drift_p": 0.027367281870773225,
+      "drift_q": -0.009402621537446976,
+      "converged": true,
+      "weakly_stationary": true,
+      "elapsed_s": 222.43
+    },
+    {
+      "lambda": 1.0,
+      "tau": 1.0,
+      "seed": 42,
+      "reward_loss": -5.0,
+      "slave_lam": 1.0,
+      "final_p": 0.17417535185813904,
+      "final_q": 0.27087029814720154,
+      "p": 0.20355443847485077,
+      "q": 0.24825430183838576,
+      "p_std": 0.03987000002369833,
+      "q_std": 0.05085498802334204,
+      "p_tail_range": 0.15939462184906006,
+      "q_tail_range": 0.18420222401618958,
+      "win_rate": 0.7987498257594502,
+      "obj_return": -0.20750104544329856,
+      "obj_return_std": 0.09748472788205073,
+      "ent_e_init": 0.500574127985881,
+      "ent_s_init": 0.5534733075361985,
+      "subj_std": {
+        "emperor": 1.4200026484240775,
+        "slave": 1.4200026484240775
+      },
+      "drift_p": 0.0033624102480900586,
+      "drift_q": -0.030567167279047847,
+      "converged": true,
+      "weakly_stationary": true,
+      "elapsed_s": 227.94
+    },
+    {
+      "lambda": 1.0,
+      "tau": 1.0,
+      "seed": 43,
+      "reward_loss": -5.0,
+      "slave_lam": 1.0,
+      "final_p": 0.2463751584291458,
+      "final_q": 0.22165919840335846,
+      "p": 0.21048850890917656,
+      "q": 0.26199667423199385,
+      "p_std": 0.04108824002338105,
+      "q_std": 0.06217696007129978,
+      "p_tail_range": 0.15613286197185516,
+      "q_tail_range": 0.2122676819562912,
+      "win_rate": 0.8031244908966737,
+      "obj_return": -0.18125305461995703,
+      "obj_return_std": 0.09697862672509143,
+      "ent_e_init": 0.5096852634197626,
+      "ent_s_init": 0.5652139889888275,
+      "subj_std": {
+        "emperor": 1.420059407248946,
+        "slave": 1.420059407248946
+      },
+      "drift_p": 0.011639538030020713,
+      "drift_q": -0.009597363762366473,
+      "converged": true,
+      "weakly_stationary": true,
+      "elapsed_s": 245.17
+    }
+  ],
+  "n_converged": 4,
+  "n_weakly_stationary": 4,
+  "convergence_by_std": {
+    "0.15": 4,
+    "0.12": 4,
+    "0.1": 4,
+    "0.08": 4,
+    "0.06": 1,
+    "0.05": 0
+  },
+  "elapsed_s": 919.3
+}

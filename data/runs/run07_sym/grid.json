@@ -1,0 +1,187 @@
+{
+  "predictions": {
+    "sym_payoff_q_minus_p": "对称收益（A-A 皇帝 -1）下若 q-p 仍为正，则 q-p 不是 +1/-5 量级不对称所致；若 q-p 消失，则量级不对称是元凶",
+    "sym_payoff_equilibrium": "对称收益版本完整 5 轮理性均衡仍为 p=q=0.2，V_4=+0.6，胜率 0.8"
+  },
+  "meta": {
+    "run_name": "run07_sym",
+    "steps_per_run": 400000,
+    "rollout": 2048,
+    "epochs": 2,
+    "batch_size": 128,
+    "lr": 0.0003,
+    "ent_coef": 0.01,
+    "min_ent": 0.5,
+    "ret_norm": false,
+    "adv_norm": false,
+    "weight_mode": "window",
+    "weight_ref_prob": 0.2,
+    "conv_tol": 0.05,
+    "conv_std": 0.1,
+    "alpha": 1.0,
+    "beta": 1.0,
+    "reward_loss": -1.0,
+    "slave_lam": 1.0,
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "started_at": "2026-08-16T13:49:21",
+    "git_commit_start": "1624c559a46b6a1d2e56c131c9ef64baf8b8e8dd",
+    "git_dirty_start": false,
+    "sweep_py_sha256_start": "c9415a88c820",
+    "git_commit_end": "1624c559a46b6a1d2e56c131c9ef64baf8b8e8dd",
+    "git_dirty_end": false,
+    "sweep_py_sha256_end": "c9415a88c820",
+    "encoding": "utf-8"
+  },
+  "check_lambda": {
+    "p_at_lambda_min": 0.2074,
+    "p_at_lambda_max": 0.2074,
+    "direction": "λ↑→p↓ 不成立"
+  },
+  "check_lambda_median": {
+    "p_median_at_lambda_min": 0.2064,
+    "p_median_at_lambda_max": 0.2064,
+    "direction": "λ↑→p↓ 不成立"
+  },
+  "check_tau": {
+    "q_at_tau_min": 0.2549,
+    "q_at_tau_max": 0.2549,
+    "dist_to_uniform_min_tau": 0.2451,
+    "dist_to_uniform_max_tau": 0.2451,
+    "direction": "τ↑→均匀 不成立"
+  },
+  "check_tau_median": {
+    "q_median_at_tau_min": 0.251,
+    "q_median_at_tau_max": 0.251,
+    "dist_to_uniform_min_tau": 0.249,
+    "dist_to_uniform_max_tau": 0.249,
+    "direction": "τ↑→均匀 不成立"
+  },
+  "check_tau_entropy": {
+    "note": "均匀随机 = 初始状态策略熵 ln2≈0.6931；距离 = ln2 - 熵",
+    "dist_uniform_median_at_tau_min": 0.1392,
+    "dist_uniform_median_at_tau_max": 0.1392,
+    "direction": "τ↑→均匀 不成立"
+  },
+  "cells": [
+    {
+      "lambda": 1.0,
+      "tau": 1.0,
+      "n_seeds": 3,
+      "final_p": 0.20743912318323413,
+      "final_q": 0.25489461638479155,
+      "final_p_std": 0.0038063061815886354,
+      "final_q_std": 0.010860357772765688,
+      "final_p_median": 0.20642134432609266,
+      "final_q_median": 0.25098976760338515,
+      "win_rate": 0.8001863840949849,
+      "obj_return": 0.6003727681899699,
+      "obj_return_std": 0.004855642576908429,
+      "ent_s_init_mean": 0.5567463651681558,
+      "ent_s_init_median": 0.5539122781692407
+    }
+  ],
+  "runs": [
+    {
+      "lambda": 1.0,
+      "tau": 1.0,
+      "seed": 42,
+      "reward_loss": -1.0,
+      "slave_lam": 1.0,
+      "final_p": 0.19269059598445892,
+      "final_q": 0.18171046674251556,
+      "p": 0.20642134432609266,
+      "q": 0.24398293670935509,
+      "p_std": 0.037356783468160674,
+      "q_std": 0.05656760336644413,
+      "p_tail_range": 0.15578383207321167,
+      "q_tail_range": 0.2222483903169632,
+      "win_rate": 0.799599372543855,
+      "obj_return": 0.5991987450877101,
+      "obj_return_std": 0.03417772929035318,
+      "ent_e_init": 0.5051365311329181,
+      "ent_s_init": 0.5472125151218512,
+      "subj_std": {
+        "emperor": 0.6296940422550765,
+        "slave": 0.6296940422550765
+      },
+      "drift_p": 0.009967380895828604,
+      "drift_q": -0.06325527251912996,
+      "converged": false,
+      "weakly_stationary": false,
+      "elapsed_s": 225.84
+    },
+    {
+      "lambda": 1.0,
+      "tau": 1.0,
+      "seed": 43,
+      "reward_loss": -1.0,
+      "slave_lam": 1.0,
+      "final_p": 0.23786038160324097,
+      "final_q": 0.2839689552783966,
+      "p": 0.21252568066120148,
+      "q": 0.26971114484163433,
+      "p_std": 0.04461620936467979,
+      "q_std": 0.07418478761100274,
+      "p_tail_range": 0.17042486369609833,
+      "q_tail_range": 0.2814532220363617,
+      "win_rate": 0.8034095720021365,
+      "obj_return": 0.6068191440042728,
+      "obj_return_std": 0.026970597283715307,
+      "ent_e_init": 0.5115788395588214,
+      "ent_s_init": 0.5691143022133753,
+      "subj_std": {
+        "emperor": 0.6363463561636337,
+        "slave": 0.6363463561636337
+      },
+      "drift_p": 0.014987192092797696,
+      "drift_q": -0.04630900632876617,
+      "converged": true,
+      "weakly_stationary": true,
+      "elapsed_s": 224.08
+    },
+    {
+      "lambda": 1.0,
+      "tau": 1.0,
+      "seed": 44,
+      "reward_loss": -1.0,
+      "slave_lam": 1.0,
+      "final_p": 0.1872989684343338,
+      "final_q": 0.216530442237854,
+      "p": 0.20337034456240824,
+      "q": 0.25098976760338515,
+      "p_std": 0.042332134112982624,
+      "q_std": 0.06032394874564117,
+      "p_tail_range": 0.16104282438755035,
+      "q_tail_range": 0.2570398449897766,
+      "win_rate": 0.7975502077389633,
+      "obj_return": 0.5951004154779268,
+      "obj_return_std": 0.025394266993805342,
+      "ent_e_init": 0.4998501615646558,
+      "ent_s_init": 0.5539122781692407,
+      "subj_std": {
+        "emperor": 0.632568938655872,
+        "slave": 0.632568938655872
+      },
+      "drift_p": 0.005293189906156959,
+      "drift_q": -0.0818461501636566,
+      "converged": false,
+      "weakly_stationary": false,
+      "elapsed_s": 225.58
+    }
+  ],
+  "n_converged": 1,
+  "n_weakly_stationary": 1,
+  "convergence_by_std": {
+    "0.15": 1,
+    "0.12": 1,
+    "0.1": 1,
+    "0.08": 1,
+    "0.06": 0,
+    "0.05": 0
+  },
+  "elapsed_s": 676.5
+}

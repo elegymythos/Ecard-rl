@@ -1,0 +1,17 @@
+{
+  "utility": "identity",
+  "adv_norm": false,
+  "seed": 42,
+  "steps": 50000,
+  "final_p": 0.2777317464351654,
+  "final_q": 0.0731046199798584,
+  "equilibrium_p": 0.2,
+  "equilibrium_q": 0.2,
+  "deviation_p": 0.0777317464351654,
+  "deviation_q": -0.1268953800201416,
+  "win_rate": 0.9408713692946058,
+  "obj_return": 0.6452282157676349,
+  "drift_p": 0.12755324658937753,
+  "drift_q": -0.3131400571204722,
+  "elapsed_s": 79.4
+}

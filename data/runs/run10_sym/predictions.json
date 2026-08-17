@@ -1,0 +1,4 @@
+{
+  "run10_sym_q_minus_p": "补 seeds 45,46 后，对称收益下 q-p 应仍全部为正；若任一种子 q-p<=0，则 run07_sym 的 q-p 结论需弱化",
+  "run10_sym_expected_mean": "q-p 均值预期保持在 +0.04~+0.06，与 run07_sym 的 +0.047 一致"
+}

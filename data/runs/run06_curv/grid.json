@@ -1,0 +1,133 @@
+{
+  "predictions": {
+    "lambda_up_emperor_p_down": "λ↑ → 皇帝首轮 p↓（损失厌恶让他躲 A-A）",
+    "tau_up_toward_uniform": "τ↑ → 策略逼近均匀随机"
+  },
+  "meta": {
+    "run_name": "run06_curv",
+    "steps_per_run": 400000,
+    "rollout": 2048,
+    "epochs": 2,
+    "batch_size": 128,
+    "lr": 0.0003,
+    "ent_coef": 0.01,
+    "min_ent": 0.5,
+    "ret_norm": false,
+    "adv_norm": false,
+    "weight_mode": "window",
+    "weight_ref_prob": 0.2,
+    "conv_tol": 0.05,
+    "conv_std": 0.1,
+    "alpha": 1.0,
+    "beta": 1.0,
+    "git_dirty": false,
+    "seeds": [
+      42,
+      43
+    ],
+    "started_at": "2026-08-16T11:30:52",
+    "git_commit": "5d3ff20fc4a736a4dca1181ba66b5d4a469f846d",
+    "sweep_py_sha256": "e68ac388696c",
+    "encoding": "utf-8"
+  },
+  "check_lambda": {
+    "p_at_lambda_min": 0.2051,
+    "p_at_lambda_max": NaN,
+    "direction": "λ↑→p↓ 不成立"
+  },
+  "check_lambda_median": {
+    "p_median_at_lambda_min": 0.2051,
+    "p_median_at_lambda_max": NaN,
+    "direction": "λ↑→p↓ 不成立"
+  },
+  "check_tau": {
+    "q_at_tau_min": NaN,
+    "q_at_tau_max": 0.2677,
+    "dist_to_uniform_min_tau": NaN,
+    "dist_to_uniform_max_tau": 0.2323,
+    "direction": "τ↑→均匀 不成立"
+  },
+  "check_tau_median": {
+    "q_median_at_tau_min": NaN,
+    "q_median_at_tau_max": 0.2677,
+    "dist_to_uniform_min_tau": NaN,
+    "dist_to_uniform_max_tau": 0.2323,
+    "direction": "τ↑→均匀 不成立"
+  },
+  "check_tau_entropy": {
+    "note": "均匀随机 = 初始状态策略熵 ln2≈0.6931；距离 = ln2 - 熵",
+    "dist_uniform_median_at_tau_min": NaN,
+    "dist_uniform_median_at_tau_max": 0.13,
+    "direction": "τ↑→均匀 不成立"
+  },
+  "cells": [
+    {
+      "lambda": 1.0,
+      "tau": 1.0,
+      "n_seeds": 2,
+      "final_p": 0.20511883611862475,
+      "final_q": 0.2676946908617631,
+      "final_p_std": 0.0003595184057186701,
+      "final_q_std": 0.00044947996353492115,
+      "final_p_median": 0.20511883611862475,
+      "final_q_median": 0.2676946908617631,
+      "win_rate": 0.8027502797935495,
+      "obj_return": -0.18349832123870258,
+      "obj_return_std": 0.020971779008255934,
+      "ent_s_init_mean": 0.5631904712854288,
+      "ent_s_init_median": 0.5631904712854288
+    }
+  ],
+  "runs": [
+    {
+      "lambda": 1.0,
+      "tau": 1.0,
+      "seed": 42,
+      "final_p": 0.17269624769687653,
+      "final_q": 0.20537269115447998,
+      "p": 0.2047593177129061,
+      "q": 0.26724521089822817,
+      "p_std": 0.0654502055993206,
+      "q_std": 0.09991640600184631,
+      "win_rate": 0.7992549832921735,
+      "obj_return": -0.2044701002469585,
+      "obj_return_std": 0.1358013418161381,
+      "ent_e_init": 0.4946198272399413,
+      "ent_s_init": 0.5565797923467098,
+      "subj_std": {
+        "emperor": 1.6797230101224943,
+        "slave": 1.6797230101224943
+      },
+      "drift_p": 0.005707613622339874,
+      "drift_q": -0.006280388205479381,
+      "converged": true,
+      "elapsed_s": 536.78
+    },
+    {
+      "lambda": 1.0,
+      "tau": 1.0,
+      "seed": 43,
+      "final_p": 0.16628508269786835,
+      "final_q": 0.201698899269104,
+      "p": 0.20547835452434343,
+      "q": 0.268144170825298,
+      "p_std": 0.04187978541153826,
+      "q_std": 0.06763345028879424,
+      "win_rate": 0.8062455762949255,
+      "obj_return": -0.16252654223044663,
+      "obj_return_std": 0.0901205127042171,
+      "ent_e_init": 0.5026109570111984,
+      "ent_s_init": 0.5698011502241477,
+      "subj_std": {
+        "emperor": 1.6560426851679007,
+        "slave": 1.6560426851679007
+      },
+      "drift_p": 0.007444521101812512,
+      "drift_q": -0.017583000163237272,
+      "converged": true,
+      "elapsed_s": 565.36
+    }
+  ],
+  "n_converged": 2,
+  "elapsed_s": 1102.2
+}

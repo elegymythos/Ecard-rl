@@ -85,8 +85,13 @@ def best_response_slave(p_by_k, reward_loss: float) -> float:
     return float(v)
 
 
-def analyze_checkpoint(path: Path) -> dict:
+def analyze_checkpoint(path: Path, swap_eval: bool = False) -> dict:
     agents, meta = load_checkpoint(path)
+    if swap_eval:
+        # 事后交换角色：用奴隶网络当皇帝、皇帝网络当奴隶。
+        # 如果 q-p 是“网络身份”造成的，交换后 q-p 应反号；
+        # 如果 q-p 是“角色”造成的，交换后 q-p 应保持为正。
+        agents = {"emperor": agents["slave"], "slave": agents["emperor"]}
     reward_loss = float(meta.get("reward_loss", -5.0))
     states = per_state_probs(agents, reward_loss)
     p_by_k = {k: p for k, p, _ in states}
@@ -114,6 +119,8 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dir", required=True, help="run 目录，内含 checkpoints/*.pt")
     ap.add_argument("--pattern", default="lam*.pt", help="checkpoint 文件名模式，默认 lam*.pt")
+    ap.add_argument("--swap-eval", action="store_true",
+                    help="事后交换皇帝/奴隶网络再做一次评估，用于区分 q-p 来自网络身份还是角色")
     ap.add_argument("--save", action="store_true", help="把结果写到 <dir>/evaluation.json")
     args = ap.parse_args()
 
@@ -126,7 +133,8 @@ def main() -> None:
         raise FileNotFoundError(f"{ckpt_dir} 下没有匹配 {args.pattern} 的 checkpoint")
 
     results = [analyze_checkpoint(p) for p in paths]
-    for r in results:
+    swapped = [analyze_checkpoint(p, swap_eval=True) for p in paths] if args.swap_eval else []
+    for r, sw in zip(results, swapped or [None] * len(results)):
         meta = r["meta"]
         print(f"\n=== {r['checkpoint']} ===")
         print(f"meta: lam={meta.get('lambda')} tau={meta.get('tau')} seed={meta.get('seed')} "
@@ -138,6 +146,12 @@ def main() -> None:
         print(f"V_actual={r['v_actual']:.4f}  BR_E={r['br_emperor']:.4f}  "
               f"BR_S={r['br_slave']:.4f}  exploit_E={r['exploit_emperor']:.4f}  "
               f"exploit_S={r['exploit_slave']:.4f}  nash_conv={r['nash_conv']:.4f}")
+        if sw is not None:
+            print("--- swapped roles (eval only) ---")
+            for row in sw["k"]:
+                print(f"{row['k']} : {row['p']:.4f}  {row['q']:.4f}")
+            print(f"swapped q-p(first)={sw['q_minus_p_first']:.4f}  "
+                  f"nash_conv={sw['nash_conv']:.4f}")
 
     if len(results) > 1:
         print("\n=== aggregate ===")
@@ -146,6 +160,10 @@ def main() -> None:
             vals = [r[metric] for r in results]
             print(f"{metric}: mean={np.mean(vals):.4f} sd={np.std(vals):.4f} "
                   f"min={min(vals):.4f} max={max(vals):.4f}")
+        if swapped:
+            vals = [r["q_minus_p_first"] for r in swapped]
+            print(f"swapped q-p(first): mean={np.mean(vals):.4f} sd={np.std(vals):.4f} "
+                  f"min={min(vals):.4f} max={max(vals):.4f}")
         print("per-k mean p/q:")
         for k in (4, 3, 2, 1):
             ps = [next(row["p"] for row in r["k"] if row["k"] == k) for r in results]
@@ -153,8 +171,11 @@ def main() -> None:
             print(f"k={k}: p={np.mean(ps):.4f} q={np.mean(qs):.4f}")
 
     if args.save:
+        payload = {"normal": results}
+        if swapped:
+            payload["swapped_roles"] = swapped
         out = run_dir / "evaluation.json"
-        out.write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
+        out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"\n已保存 {out}")
 
 

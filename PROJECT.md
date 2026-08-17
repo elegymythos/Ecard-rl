@@ -43,8 +43,12 @@
 - run06_curv（α=β=1.0, 2 seeds）：q-p=+0.063；n=2，仅方向性证据。
 - run07_sym + run10_sym：对称收益下 q-p 5/5 为正（+0.049），但仅 2/5 弱平稳。
 - run08_ref + run10_ref：ref 模式下 τ 无位置效应（5 seeds，配对 p≈0.37）。
+- run11_identity：真 identity 下 q-p=+0.052（5/5 为正），逐层接近均衡。
+- run12_roleswap：训练式消融失败（0/5 收敛）；事后 `--swap-eval` 显示 q-p 随网络交换反号，说明 q-p 是网络身份不对称。
+- run13_shared：共享网络 p=q≈0.50，5/5 弱平稳但不收敛到均衡。
+- run14_identity_lambda：真 identity 下 λ↑→p↓ 仍成立（-0.015）。
 - run05 及更早的“收敛”结论全部作废（旧判据对极限环失明）。
-- 待跑（命令见 `train_all_next.bat`）：run11_identity、run12_roleswap、run13_shared、run14_identity_lambda、run11_minent。
+- 待跑（命令见 `train_all_next.bat` [5] 节）：run11_minent。
 
 ## 5. 运行
 
@@ -59,7 +63,8 @@ python sweep.py --steps 400000 --min-ent 0.5
 
 Windows 一键训练脚本：`train_all_next.bat [steps]`（先跑验证门，再顺序执行
 run11_identity / run12_roleswap / run13_shared / run14_identity_lambda / run11_minent，
-最后运行 `analyze.py --all` 与 `evaluate.py`）。
+最后运行 `analyze.py --all` 与 `evaluate.py`）。当前 run11_identity/run12/13/14 已完成，
+剩余 run11_minent 可直接用该脚本的 [5] 节单独执行。
 
 补充实验（代码已支持）：`--reward-loss -1`（对称收益消融）、`--slave-lam 2.25`（非对称 λ）、
 `--weight-mode ref`（反馈环隔离）、`--swap-roles`（角色交换消融）、
@@ -69,6 +74,7 @@ run11_identity / run12_roleswap / run13_shared / run14_identity_lambda / run11_m
 
 - 阶段 2/3/4 的初版代码已由项目所有者凭记忆重写，并通过同一套验证门。
 - 模拟结论仅覆盖 λ×τ×αβ 网格、5 seeds、400k 预算、min-ent 0.5、window 权重模式。
-- run11–run14 为已排入 `train_all_next.bat` 的待训练实验；在它们完成前，
-  min-ent 敏感性、真 identity n=5、角色/共享网络消融和逐层 exploitability 均无数据。
+- run11_identity/run13_shared/run14_identity_lambda 已完成并分析；run12_roleswap
+  训练式消融失败，机制改用事后 `--swap-eval`；run11_minent（min-ent 敏感性）尚未运行，
+  因此 min-ent 0.5 的主混淆仍未直接检验。
 - 旧 README 数字是历史基线，不是当前结论。

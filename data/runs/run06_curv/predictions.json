@@ -1,0 +1,5 @@
+{
+  "lambda_up_emperor_p_down": "λ↑ → 皇帝首轮 p↓（损失厌恶让他躲 A-A）",
+  "tau_up_toward_uniform": "τ↑ → 策略逼近均匀随机",
+  "run06_curv_q_minus_p": "α=β=1.0 真 identity 下，q-p 应接近 0（曲率是 q-p 的来源）"
+}

@@ -21,7 +21,7 @@
 | 1 | env.py + test_env.py | ✅ 完成 | 8/8 测试通过；非法动作 fail loud |
 | 2 | solver.py | ✅ 完成（已凭记忆重写） | 单轮 1/7；V_4=-0.2；p_k=1/(k+1)；W=0.8 |
 | 3 | utility.py + ppo.py + train.py | ✅ 完成（已凭记忆重写） | identity 下 p̂/q̂ 对照均衡 (0.2,0.2) |
-| 4 | sweep.py + 网格扫描 | ✅ run06/run07_sym/run08_ref/run09_asym/run10_sym/run10_ref 已完成；run11_identity/run12_roleswap/run13_shared/run14_identity_lambda/run11_minent 已排入 `train_all_next.bat` | λ×τ 网格 × 5 seeds；预测先写 |
+| 4 | sweep.py + 网格扫描 | ✅ run06/run07_sym/run08_ref/run09_asym/run10_sym/run10_ref/run11_identity/run12_roleswap/run13_shared/run14_identity_lambda 已完成；⬜ run11_minent 待跑 | λ×τ 网格 × 5 seeds；预测先写 |
 | 5 | 人类对局数据 | ⬜ 待做 | 10 人 × 100 局，记录每轮出牌 |
 | 6 | results.md | ✅ 已定稿（后续补充实验将追加修订） | 每行：预测 → 实际 → 解释 |
 
@@ -62,7 +62,11 @@
 - run07_sym + run10_sym（对称收益消融，A-A 皇帝 -1，5 seeds）：q-p 仍 5/5 为正（+0.049）→ 量级不对称不是 q-p 的必要条件；但 5/5 中仅 2/5 弱平稳，最终幅度未稳定。
 - run08_ref + run10_ref（概率权重 ref 模式，5 seeds）：τ 位置效应消失（配对 p≈0.37），run08_ref 的 2-seed 方向性结论是噪声。
 - run09_asym（非对称 λ）：已完成，未发现奴隶 λ=2.25 对 q 的降低效应。
-- 待跑：run11_identity（真 identity n=5）、run12_roleswap（角色交换）、run13_shared（共享网络）、run14_identity_lambda（真 identity λ 轴）、run11_minent（min-ent 敏感性）。
+- run11_identity（真 identity n=5）：已完成，q-p=+0.052（5/5 为正），逐层接近均衡。
+- run12_roleswap（训练中每轮交换）：已完成但 0/5 收敛，不可解释；机制改用事后 `--swap-eval`。
+- run13_shared（共享网络）：已完成，p=q≈0.50（构造性），但不收敛到均衡。
+- run14_identity_lambda（真 identity λ 轴）：已完成，λ↑→p↓ 仍成立（-0.015）。
+- 待跑：run11_minent（min-ent 敏感性）。
 
 ## 6. 文件结构
 

@@ -1,6 +1,6 @@
 # results.md — 阶段 6 结果定稿（修订版）
 
-> 状态：✅ 定稿（2026-08-16 修订；run06/run06_curv/run07_sym/run08_ref/run09_asym/run10_sym/run10_ref 已完成）。
+> 状态：✅ 定稿（2026-08-16 修订；run06/run06_curv/run07_sym/run08_ref/run09_asym/run10_sym/run10_ref/run11_identity/run12_roleswap/run13_shared/run14_identity_lambda 已完成；run11_minent 待跑）。
 > 结论分级：✅ 已验证 ｜ 🟡 方向性成立但证据有限 ｜ ⬜ 待验证。
 > 术语约定：本修订版将原“真收敛”改为「弱平稳」——满足 |Δ|<0.05 且末段 std<0.1
 > 的过程仍存在小振幅振荡（见 §3.3），不等同于固定点收敛。
@@ -186,6 +186,64 @@ q 的 λ 效应在 τ 层内不一致（τ=0.5：-0.021；τ=0.75：-0.002；τ=
   q 差 +0.011（n=2 vs 5，t 检验 p≈0.44），不能区分效应与噪声。
 - **结论**：未发现奴隶侧 λ 对 q 的降低效应；非对称 λ 方向建议降为低优先级。
 
+### 5.6 run11–run14：真 identity、角色/共享网络、λ 轴（最新运行）
+
+#### run11_identity（α=β=1.0 真 identity，λ1τ1，5 seeds）
+
+| 指标 | 值 |
+| :--- | :--- |
+| p / q / q-p | 0.205 / 0.256 / **+0.052** |
+| 弱平稳 | 4/5（seed42 的 q_std=0.101 刚好超 0.1） |
+| 逐层均值（evaluate.py） | k=4: 0.193/0.228；k=3: 0.242/0.271；k=2: 0.330/0.354；k=1: 0.548/0.552 |
+| NashConv 均值 | 0.67（皇帝 exploit≈0.37，奴隶 exploit≈0.30） |
+
+- ✅ 预测核验：真 identity 下 q-p 仍为正（5/5，单侧符号检验 p≈0.031），
+  且逐层策略接近均衡 p_k=0.2/0.25/0.333/0.5。**曲率不是 q-p 的来源**从 n=2
+  方向性升级为 n=5 的正式证据。
+- 🟡 虽然首轮/逐层都在均衡邻域，但 NashConv≈0.67 说明双方仍有可观的单方面改进空间，
+  “弱平稳”不等于“纳什均衡”。
+
+#### run12_roleswap（训练中每轮交换角色网络）
+
+| 指标 | 值 |
+| :--- | :--- |
+| p / q / q-p | 0.592 / 0.548 / **-0.044** |
+| 弱平稳 | 0/5 |
+| win / ret | 0.670 / -0.980 |
+
+- ❌ 这个训练式消融**失败/不可解释**：每轮交换导致强非平稳，0/5 收敛，不能用于
+  机制结论。
+- ✅ 改用**事后角色交换评估**（`evaluate.py --swap-eval`，对 run11_identity 的
+  checkpoint 只换网络不重训）：正常 q-p 均值 +0.035，交换后 -0.035，**符号精确反转**。
+  说明 q-p 是“网络身份不对称”而非“角色不对称”；两个网络本身学会了不同的王牌倾向，
+  训练把较低王牌倾向分配给了皇帝角色。
+
+#### run13_shared（共享策略网络）
+
+| 指标 | 值 |
+| :--- | :--- |
+| p / q / q-p | 0.501 / 0.501 / **0.000** |
+| 弱平稳 | 5/5 |
+| win / ret | 0.663 / -1.025 |
+
+- ✅ 构造性验证：共享网络必然 p=q。
+- ⚠️ 但共享网络收敛到 p=q≈0.50，而不是均衡 0.20；说明**独立网络同时是 q-p 和
+  接近理性均衡这两个现象的必要条件**。共享网络消融不是“只去掉 q-p”的干净对照。
+
+#### run14_identity_lambda（真 identity λ 轴，α=β=1.0）
+
+| λ | p | q | 弱平稳 |
+| :---: | :---: | :---: | :---: |
+| 1 | 0.205 | 0.256 | 4/5 |
+| 2 | 0.196 | 0.249 | 5/5 |
+| 3 | 0.195 | 0.253 | 5/5 |
+| 5 | 0.190 | 0.241 | 5/5 |
+
+- ✅ 预测核验：真 identity 下 λ↑→p↓ 仍成立（点估计 -0.015，5/5 seed 方向为负），
+  与 run06（α=β=0.88，-0.023）同量级。**λ 效应不是曲率造成的**。
+- 🟡 λ 对 q 的次级效应在真 identity 下只有 4/5 seed 方向为负，且 seed44 近似为 0；
+  应继续视为弱/交互性证据。
+
 ## 6. 证据边界与下一步
 
 ### 证据边界
@@ -193,19 +251,18 @@ q 的 λ 效应在 τ 层内不一致（τ=0.5：-0.021；τ=0.75：-0.002；τ=
 - 模拟侧结论覆盖：λ×τ×αβ 网格、5 seeds、400k 预算、min-ent 0.5、window 权重模式；
   ref 模式与对称收益消融各 5 seeds（run07–run10）。
 - run07_sym+run10_sym 合并后仅 2/5 弱平稳；run08_ref+run10_ref 合并后 τ 效应消失。
-- 更长预算未覆盖。
-- 无人类数据；“现实均衡”仍是模拟侧假设。
+- run11_identity / run13_shared / run14_identity_lambda 已完成并分析；
+  run12_roleswap 训练式消融失败，机制结论改用事后 `--swap-eval`。
+- **run11_minent（min-ent 敏感性）尚未运行**；min-ent 0.5 的主混淆仍未直接检验。
+- 更长预算未覆盖；无人类数据；“现实均衡”仍是模拟侧假设。
 
 ### 下一步
 
-1. **已排入 `train_all_next.bat` 的高价值高成本实验**：
-   - run11_minent：min-ent 敏感性（0.45/0.55/0.60，λ=1/5，5 seeds）。
-   - run11_identity：真 identity（α=β=1.0）补到 5 seeds。
-   - run12_roleswap：角色交换消融，检验 q-p 是否依赖独立网络的持久角色。
-   - run13_shared：共享策略网络消融，构造性确认 p=q。
-   - run14_identity_lambda：真 identity 下的 λ 轴，检验 λ 效应是否依赖曲率。
-2. 上述训练完成后运行 `python analyze.py --all` 与 `python evaluate.py` 做合并统计
-   和逐层策略/exploitability 分析。
+1. **仍待训练**：run11_minent（min-ent 0.45/0.55/0.60，λ=1/5，5 seeds），
+   命令在 `train_all_next.bat` 的 [5] 节。
+2. **已可用但建议补**：对 run11_identity / run14_identity_lambda 跑更严格
+   exploitability 报告；对 run11_minent 跑完后同样执行 `analyze.py --all` 与
+   `evaluate.py --dir ... --swap-eval --save`。
 3. 阶段 5 人类数据（10×100 局）。
 4. 阶段 2/3/4 代码的“凭记忆重写”欠账：**已完成**。
 
@@ -213,5 +270,8 @@ q 的 λ 效应在 τ 层内不一致（τ=0.5：-0.021；τ=0.75：-0.002；τ=
 
 - run07_sym + run10_sym：对称收益消融 5 seeds 已合并分析，见 §5.3。
 - run08_ref + run10_ref：ref 模式 5 seeds 已合并分析，见 §5.4。
-- run11–run14：新排入 `train_all_next.bat`，训练后按 `analyze.py` 与 `evaluate.py`
-  合并分析。新实验的命令与预测见 `predictions/run1*.json`。
+- run11_identity / run13_shared / run14_identity_lambda：已完成，见 §5.6。
+- run12_roleswap：训练式消融失败，机制改用 `evaluate.py --swap-eval` 事后评估。
+- run11_minent：尚未运行；命令见 `train_all_next.bat` [5] 节。
+- 复现/合并命令：`python analyze.py --all`；逐层评估：
+  `python evaluate.py --dir data/runs/<name> --swap-eval --save`。

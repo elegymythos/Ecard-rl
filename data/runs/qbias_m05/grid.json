@@ -1,0 +1,155 @@
+{
+  "predictions": {
+    "lambda_up_emperor_p_down": "λ↑ → 皇帝首轮 p↓（损失厌恶让他躲 A-A）",
+    "tau_up_toward_uniform": "τ↑ → 策略逼近均匀随机"
+  },
+  "meta": {
+    "run_name": "qbias_m05",
+    "steps_per_run": 100000,
+    "rollout": 2048,
+    "epochs": 2,
+    "batch_size": 128,
+    "lr": 0.0003,
+    "ent_coef": 0.01,
+    "min_ent": 0.5,
+    "ret_norm": false,
+    "adv_norm": false,
+    "weight_mode": "window",
+    "weight_ref_prob": 0.2,
+    "conv_tol": 0.05,
+    "git_dirty": false,
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "started_at": "2026-08-15T01:40:58",
+    "git_commit": "342a1e3ec0b6cafcfeef0ffd7b6f7394ce1b90d1",
+    "sweep_py_sha256": "d1dc3df6dca6",
+    "encoding": "utf-8"
+  },
+  "check_lambda": {
+    "p_at_lambda_min": 0.1688,
+    "p_at_lambda_max": NaN,
+    "direction": "λ↑→p↓ 不成立"
+  },
+  "check_lambda_median": {
+    "p_median_at_lambda_min": 0.1756,
+    "p_median_at_lambda_max": NaN,
+    "direction": "λ↑→p↓ 不成立"
+  },
+  "check_tau": {
+    "q_at_tau_min": NaN,
+    "q_at_tau_max": 0.246,
+    "dist_to_uniform_min_tau": NaN,
+    "dist_to_uniform_max_tau": 0.254,
+    "direction": "τ↑→均匀 不成立"
+  },
+  "check_tau_median": {
+    "q_median_at_tau_min": NaN,
+    "q_median_at_tau_max": 0.2549,
+    "dist_to_uniform_min_tau": NaN,
+    "dist_to_uniform_max_tau": 0.2451,
+    "direction": "τ↑→均匀 不成立"
+  },
+  "check_tau_entropy": {
+    "note": "均匀随机 = 初始状态策略熵 ln2≈0.6931；距离 = ln2 - 熵",
+    "dist_uniform_median_at_tau_min": NaN,
+    "dist_uniform_median_at_tau_max": 0.1452,
+    "direction": "τ↑→均匀 不成立"
+  },
+  "cells": [
+    {
+      "lambda": 1.0,
+      "tau": 1.0,
+      "n_seeds": 3,
+      "final_p": 0.16883448318198876,
+      "final_q": 0.2460442218515608,
+      "final_p_std": 0.011293090858113287,
+      "final_q_std": 0.014464018402739852,
+      "final_p_median": 0.17557627293798658,
+      "final_q_median": 0.25491635501384735,
+      "win_rate": 0.8064098640259937,
+      "obj_return": -0.16154081584403793,
+      "obj_return_std": 0.02729589450434944,
+      "ent_s_init_mean": 0.5412472122245365,
+      "ent_s_init_median": 0.5479034384091696
+    }
+  ],
+  "runs": [
+    {
+      "lambda": 1.0,
+      "tau": 1.0,
+      "seed": 42,
+      "final_p": 0.22196407616138458,
+      "final_q": 0.21940040588378906,
+      "p": 0.17800201144483355,
+      "q": 0.2575698494911194,
+      "p_std": 0.03703969946897266,
+      "q_std": 0.08362146058529428,
+      "win_rate": 0.812828782298619,
+      "obj_return": -0.12302730620828593,
+      "obj_return_std": 0.10308106350666135,
+      "ent_e_init": 0.4637713332970937,
+      "ent_s_init": 0.5525516039795346,
+      "subj_std": {
+        "emperor": 1.4004293118414535,
+        "slave": 1.4004293118414535
+      },
+      "drift_p": -0.0019219846934334928,
+      "drift_q": -0.10879248648117751,
+      "converged": false,
+      "elapsed_s": 93.05
+    },
+    {
+      "lambda": 1.0,
+      "tau": 1.0,
+      "seed": 43,
+      "final_p": 0.27644267678260803,
+      "final_q": 0.18437699973583221,
+      "p": 0.17557627293798658,
+      "q": 0.22564646104971567,
+      "p_std": 0.043973860618032205,
+      "q_std": 0.06143073478923084,
+      "win_rate": 0.8035779321823474,
+      "obj_return": -0.17853240690591543,
+      "obj_return_std": 0.07575210214517807,
+      "ent_e_init": 0.4583547247780694,
+      "ent_s_init": 0.5232865942849053,
+      "subj_std": {
+        "emperor": 1.390036928051823,
+        "slave": 1.390036928051823
+      },
+      "drift_p": 0.0006912190817360275,
+      "drift_q": -0.14329177714311161,
+      "converged": false,
+      "elapsed_s": 91.73
+    },
+    {
+      "lambda": 1.0,
+      "tau": 1.0,
+      "seed": 44,
+      "final_p": 0.19107338786125183,
+      "final_q": 0.14384639263153076,
+      "p": 0.15292516516314614,
+      "q": 0.25491635501384735,
+      "p_std": 0.018549372802107073,
+      "q_std": 0.08671603419366232,
+      "win_rate": 0.8028228775970147,
+      "obj_return": -0.18306273441791243,
+      "obj_return_std": 0.05832041392819394,
+      "ent_e_init": 0.42645835545327926,
+      "ent_s_init": 0.5479034384091696,
+      "subj_std": {
+        "emperor": 1.4222705814559697,
+        "slave": 1.4222705814559697
+      },
+      "drift_p": -0.02462971512960571,
+      "drift_q": -0.12132229254795956,
+      "converged": false,
+      "elapsed_s": 93.14
+    }
+  ],
+  "n_converged": 0,
+  "elapsed_s": 278.0
+}
