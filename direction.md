@@ -81,7 +81,9 @@
 
 ## 6. 文件结构
 
-- `Question.md`：研究假设与数学附录。
+- `readme.md`：项目入口与当前进度总览。
+- `Question.md`：研究假设、主观 Nash 推导、下一步问题。
+- `ANALYSIS.md`：全面分析报告。
 - `env.py` / `test_env.py`：最小环境与规则测试。
 - `solver.py`：递归精确解。
 - `utility.py`：效用层（identity / prospect / tilt）。
@@ -94,4 +96,4 @@
 - `debug/`：逐日修复与审计记录（历史日志）。
 - `data/runs/`：正式运行归档。
 - `train_all_next.bat`：Windows 一键训练脚本（历史）。
-- `train_all_next.fish`：Linux/macOS fish 一键训练脚本（剩余机制实验）。
+- `train_all_next.fish`：Linux/macOS fish 一键训练脚本（已跑完 run15–run19）。
