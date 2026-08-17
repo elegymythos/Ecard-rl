@@ -21,7 +21,7 @@
 | 1 | env.py + test_env.py | ✅ 完成 | 8/8 测试通过；非法动作 fail loud |
 | 2 | solver.py | ✅ 完成（已凭记忆重写） | 单轮 1/7；V_4=-0.2；p_k=1/(k+1)；W=0.8 |
 | 3 | utility.py + ppo.py + train.py | ✅ 完成（已凭记忆重写） | identity 下 p̂/q̂ 对照均衡 (0.2,0.2) |
-| 4 | sweep.py + 网格扫描 | ✅ run06–run14 与 run11_minent 均已完成；⬜ run15_same_init / run16_update_order / run17_shared_trunk / run18_advnorm / run19_long 已排入 `train_all_next.fish` | λ×τ 网格 × 5 seeds；预测先写 |
+| 4 | sweep.py + 网格扫描 | ✅ run06–run19 全部完成（含 run11_minent、run15_same_init、run16_update_order、run17_shared_trunk、run18_advnorm、run19_long） | λ×τ 网格 × 5 seeds；预测先写 |
 | 5 | 人类对局数据 | ⬜ 待做 | 10 人 × 100 局，记录每轮出牌 |
 | 6 | results.md | ✅ 已定稿（后续补充实验将追加修订） | 每行：预测 → 实际 → 解释 |
 
@@ -69,6 +69,13 @@
 - run14_identity_lambda（真 identity λ 轴）：已完成，λ↑→p↓ 方向为负但单独不显著（🟡）。
 - run11_minent（min-ent 敏感性）：已完成。**min-ent 0.5 不是中性稳定器**：
   0.55/0.60 时 λ=1 的 q 升至 0.358/0.407，q-p 升至 0.159/0.205，落点强烈依赖正则化。
+- run15_same_init：相同初始化下窗口 q-p=+0.033，仍为正，比 run11 小约 0.018。
+- run16_update_order：slave_first q-p=+0.039；random 窗口 q-p=+0.051 但最终
+  checkpoint q-p≈-0.005，更新相位仍值得追。
+- run17_shared_trunk：共享躯干下 q-p=+0.060，不消除 q-p。
+- run18_advnorm：**adv-norm 开启后 λ↑→p↓ 消失（p 差≈+0.003）**，支持 λ 效应是
+  梯度尺度效应。
+- run19_long：1M 步 identity 窗口落点与 400k 一致，400k 不是明显瞬态。
 - 主观 Nash 不变性：当前效用层下 p_k=q_k=1/(k+1) 与 λ/α/β/ref 常数权重无关，
   详见 results.md §2.1。
 

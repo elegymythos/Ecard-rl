@@ -49,6 +49,11 @@
 - run14_identity_lambda：真 identity 下 λ↑→p↓ 方向为负但单独不显著（🟡）。
 - run11_minent：**min-ent 0.5 不是中性稳定器**；0.55/0.60 时 λ=1 的 q 升至 0.358/0.407，
   q-p 升至 0.159/0.205。
+- run15_same_init：窗口 q-p=+0.033，仍为正。
+- run16_update_order：slave_first q-p=+0.039；random 窗口 q-p=+0.051 但 checkpoint 近 0。
+- run17_shared_trunk：共享躯干 q-p=+0.060，不消除 q-p。
+- run18_advnorm：**adv-norm 下 λ↑→p↓ 消失**，支持 λ 效应为梯度尺度效应。
+- run19_long：1M 步与 400k 窗口落点一致。
 - run05 及更早的“收敛”结论全部作废（旧判据对极限环失明）。
 - 主观 Nash 不变性：当前效用层下均衡策略与 λ/α/β/ref 常数权重无关，见 results.md §2.1。
 
@@ -65,10 +70,8 @@ python sweep.py --steps 400000 --min-ent 0.5
 
 训练脚本：
 - Windows：`train_all_next.bat [steps]`（历史脚本，已跑完 run11–run14 与 run11_minent）。
-- Linux/macOS（fish）：`fish train_all_next.fish [steps]`，用于剩余机制实验：
-  run15_same_init / run16_update_order_slave_first / run16_update_order_random /
-  run17_shared_trunk / run18_advnorm_lambda / run19_long，跑完后自动执行
-  `analyze.py --all` 与 `evaluate.py --swap-eval --save`。
+- Linux/macOS（fish）：`fish train_all_next.fish [steps]`（已跑完 run15–run19；
+  重跑会自动跳过已存在的 (λ,τ,seed)）。
 
 补充实验（代码已支持）：`--reward-loss -1`（对称收益消融）、`--slave-lam 2.25`（非对称 λ）、
 `--weight-mode ref`（反馈环隔离）、`--swap-roles`（角色交换消融）、
@@ -78,8 +81,10 @@ python sweep.py --steps 400000 --min-ent 0.5
 
 - 阶段 2/3/4 的初版代码已由项目所有者凭记忆重写，并通过同一套验证门。
 - 模拟结论仅覆盖 λ×τ×αβ 网格、5 seeds、400k 预算、min-ent 0.5、window 权重模式。
-- run11_identity/run11_minent/run13_shared/run14_identity_lambda 已完成并分析；
-  run12_roleswap 训练式消融失败，`--swap-eval` 不作为机制证据。
+- run11_identity/run11_minent/run13_shared/run14_identity_lambda 与
+  run15_same_init/run16_update_order/run17_shared_trunk/run18_advnorm/run19_long
+  均已完成并分析；run12_roleswap 训练式消融失败，`--swap-eval` 不作为机制证据。
 - min-ent 敏感性显示落点强烈依赖 min-ent 强度，因此所有“PPO 落点”结论必须限定
-  在 min-ent=0.5；主观 Nash 不变性说明心理参数不移动均衡策略（见 results.md §2.1）。
+  在 min-ent=0.5；主观 Nash 不变性说明心理参数不移动均衡策略（见 results.md §2.1）；
+  adv-norm 使 λ↑→p↓ 消失，支持“梯度尺度效应”解释。
 - 旧 README 数字是历史基线，不是当前结论。

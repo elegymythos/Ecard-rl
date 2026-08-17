@@ -1,6 +1,6 @@
 # results.md — 阶段 6 结果定稿（修订版）
 
-> 状态：✅ 定稿（2026-08-17 修订；run06/run06_curv/run07_sym/run08_ref/run09_asym/run10_sym/run10_ref/run11_identity/run11_minent/run12_roleswap/run13_shared/run14_identity_lambda 均已完成）。
+> 状态：✅ 定稿（2026-08-17 修订；run06–run19 全部完成，含 run15_same_init / run16_update_order / run17_shared_trunk / run18_advnorm / run19_long）。
 > 结论分级：✅ 已验证 ｜ 🟡 方向性成立但证据有限 ｜ ⬜ 待验证。
 > 术语约定：本修订版将原“真收敛”改为「弱平稳」——满足 |Δ|<0.05 且末段 std<0.1
 > 的过程仍存在小振幅振荡（见 §3.3），不等同于固定点收敛。
@@ -291,6 +291,25 @@ q 的 λ 效应在 τ 层内不一致（τ=0.5：-0.021；τ=0.75：-0.002；τ=
 - ⚠️ 因此 run06 的“58/60 弱平稳 + 全部落在均衡邻域”应重新表述为
   “在 min-ent=0.5 这一特定正则化强度下的弱平稳中心”，不能外推为 PPO 的固有动力学。
 
+#### run15–run19：q-p 机制与 λ 尺度效应（最新）
+
+| run | 操作 | p | q | q-p（窗口） | 弱平稳 | 关键结论 |
+| :--- | :--- | :---: | :---: | :---: | :---: | :--- |
+| run15_same_init | 相同初始化独立网络 | 0.206 | 0.239 | +0.033 | 4/5 | q-p 仍为正，但比 run11(+0.052) 平均小约 0.018；初始化差异有贡献但不是唯一原因 |
+| run16_update_order_slave_first | slave 先更新 | 0.208 | 0.247 | +0.039 | 5/5 | q-p 仍为正 |
+| run16_update_order_random | 随机更新顺序 | 0.209 | 0.260 | +0.051 | 5/5 | 窗口口径 q-p 仍为正；但最终 checkpoint q-p 均值≈-0.005，说明更新相位对“最终策略”有影响 |
+| run17_shared_trunk | 共享躯干独立头 | 0.203 | 0.262 | +0.060 | 3/5 | 共享表征不消除 q-p |
+| run18_advnorm_lambda | adv-norm 开，λ=1/5 | λ1 0.208 / λ5 0.211 | λ1 0.253 / λ5 0.263 | +0.045/+0.052 | 4/10 | **λ↑→p↓ 在 adv-norm 下消失（p 差≈+0.003）**，支持“λ 效应是梯度尺度效应” |
+| run19_long | 1M 步 identity | 0.201 | 0.253 | +0.051 | 3/3 | 400k 不是瞬态；长预算下窗口落点与 400k 一致 |
+
+- ✅ **λ↑→p↓ 是优化尺度/动力学效应，不是均衡或心理位移。** run18 在 adv-norm
+  开启后 p 的 λ 效应从 -0.015~-0.023 变为约 +0.003，方向反转/消失。这与 §2.1 的
+  主观 Nash 不变性一致。
+- 🟡 **q-p 的机制仍未唯一确定**：同初始化、反转/随机更新顺序、共享躯干都没有让
+  窗口 q-p 消失；但 run16_random 的最终 checkpoint q-p 接近 0，说明“固定更新相位”
+  值得继续追。窗口口径与 checkpoint 口径的不一致再次出现。
+- ✅ **400k 不是明显瞬态**：run19 的 1M 步 identity 窗口落点与 400k 基本一致。
+
 ## 6. 证据边界与下一步
 
 ### 证据边界
@@ -304,16 +323,14 @@ q 的 λ 效应在 τ 层内不一致（τ=0.5：-0.021；τ=0.75：-0.002；τ=
 - **min-ent 敏感性显示落点强烈依赖正则化强度**：min-ent 0.55/0.60 下 λ=1 的
   q 升至 0.358/0.407，q-p 升至 0.159/0.205。因此所有“PPO 落点”结论必须限定
   在 min-ent=0.5。
-- 更长预算未覆盖；无人类数据；“现实均衡”仍是模拟侧假设。
+- run15–run19 已完成：adv-norm 使 λ↑→p↓ 消失，支持“梯度尺度效应”；
+  同初始化/更新顺序/共享躯干未消除窗口 q-p；1M 步与 400k 窗口一致。
+- 无人类数据；“现实均衡”仍是模拟侧假设。
 
 ### 下一步
 
-1. **剩余机制实验已写入 `train_all_next.fish`**（Linux/macOS）：
-   run15_same_init、run16_update_order_slave_first/random、run17_shared_trunk、
-   run18_advnorm_lambda、run19_long。
-   - 主观 Nash 不变性已加入 §2.1，Question 3 已改写为“动力学/尺度效应”框架。
-   - 对 run11_minent 跑 `evaluate.py --dir data/runs/run11_minent_m0.55 --save` 等，
-     看逐层策略如何随 min-ent 漂移。
+1. **剩余机制问题已基本收敛**：λ 效应解释为梯度尺度；q-p 机制仍开放，
+   但 run16_random 的 checkpoint 口径提示“更新相位”值得继续追。
 2. 阶段 5 人类数据（10×100 局）。
 3. 阶段 2/3/4 代码的“凭记忆重写”欠账：**已完成**。
 
@@ -322,6 +339,8 @@ q 的 λ 效应在 τ 层内不一致（τ=0.5：-0.021；τ=0.75：-0.002；τ=
 - run07_sym + run10_sym：对称收益消融 5 seeds 已合并分析，见 §5.3。
 - run08_ref + run10_ref：ref 模式 5 seeds 已合并分析，见 §5.4。
 - run11_identity / run11_minent / run13_shared / run14_identity_lambda：已完成，见 §5.6。
+- run15_same_init / run16_update_order / run17_shared_trunk / run18_advnorm / run19_long：
+  已完成，见 §5.6。
 - run12_roleswap：训练式消融失败；`--swap-eval` 反号是恒等式，不再作为机制证据。
 - 复现/合并命令：`python analyze.py --all`；逐层评估：
   `python evaluate.py --dir data/runs/<name> --swap-eval --save`。
