@@ -1,0 +1,496 @@
+{
+  "normal": [
+    {
+      "checkpoint": "lam1.0-tau1.0-seed42.pt",
+      "meta": {
+        "lambda": 1.0,
+        "tau": 1.0,
+        "seed": 42,
+        "reward_loss": -5.0,
+        "slave_lam": 1.0,
+        "alpha": 1.0,
+        "beta": 1.0,
+        "weight_mode": "off",
+        "min_ent": 0.5,
+        "swap_roles": false,
+        "shared_policy": false,
+        "same_init": false,
+        "update_order": "random",
+        "shared_trunk": false,
+        "adv_norm": false
+      },
+      "k": [
+        {
+          "k": 4,
+          "p": 0.17512793838977814,
+          "q": 0.1757192462682724
+        },
+        {
+          "k": 3,
+          "p": 0.21856571733951569,
+          "q": 0.21537445485591888
+        },
+        {
+          "k": 2,
+          "p": 0.2925196588039398,
+          "q": 0.29654666781425476
+        },
+        {
+          "k": 1,
+          "p": 0.48315972089767456,
+          "q": 0.527599036693573
+        }
+      ],
+      "v_actual": -0.21492580333792638,
+      "br_emperor": -0.0543154776096344,
+      "br_slave": -0.41416809223418094,
+      "exploit_emperor": 0.16061032572829198,
+      "exploit_slave": 0.19924228889625456,
+      "nash_conv": 0.35985261462454654,
+      "q_minus_p_first": 0.0005913078784942627
+    },
+    {
+      "checkpoint": "lam1.0-tau1.0-seed43.pt",
+      "meta": {
+        "lambda": 1.0,
+        "tau": 1.0,
+        "seed": 43,
+        "reward_loss": -5.0,
+        "slave_lam": 1.0,
+        "alpha": 1.0,
+        "beta": 1.0,
+        "weight_mode": "off",
+        "min_ent": 0.5,
+        "swap_roles": false,
+        "shared_policy": false,
+        "same_init": false,
+        "update_order": "random",
+        "shared_trunk": false,
+        "adv_norm": false
+      },
+      "k": [
+        {
+          "k": 4,
+          "p": 0.24155332148075104,
+          "q": 0.33298808336257935
+        },
+        {
+          "k": 3,
+          "p": 0.29676195979118347,
+          "q": 0.3648836314678192
+        },
+        {
+          "k": 2,
+          "p": 0.38493889570236206,
+          "q": 0.43006089329719543
+        },
+        {
+          "k": 1,
+          "p": 0.6229204535484314,
+          "q": 0.6022651791572571
+        }
+      ],
+      "v_actual": -0.2852865738519681,
+      "br_emperor": 0.42381729164516346,
+      "br_slave": -0.4493199288845062,
+      "exploit_emperor": 0.7091038654971316,
+      "exploit_slave": 0.16403335503253813,
+      "nash_conv": 0.8731372205296697,
+      "q_minus_p_first": 0.09143476188182831
+    },
+    {
+      "checkpoint": "lam1.0-tau1.0-seed44.pt",
+      "meta": {
+        "lambda": 1.0,
+        "tau": 1.0,
+        "seed": 44,
+        "reward_loss": -5.0,
+        "slave_lam": 1.0,
+        "alpha": 1.0,
+        "beta": 1.0,
+        "weight_mode": "off",
+        "min_ent": 0.5,
+        "swap_roles": false,
+        "shared_policy": false,
+        "same_init": false,
+        "update_order": "random",
+        "shared_trunk": false,
+        "adv_norm": false
+      },
+      "k": [
+        {
+          "k": 4,
+          "p": 0.17172901332378387,
+          "q": 0.1618179827928543
+        },
+        {
+          "k": 3,
+          "p": 0.21485084295272827,
+          "q": 0.21062234044075012
+        },
+        {
+          "k": 2,
+          "p": 0.2963481545448303,
+          "q": 0.30833855271339417
+        },
+        {
+          "k": 1,
+          "p": 0.4882654547691345,
+          "q": 0.5420804619789124
+        }
+      ],
+      "v_actual": -0.21812197704145952,
+      "br_emperor": 0.029092103242874146,
+      "br_slave": -0.4050068269559519,
+      "exploit_emperor": 0.24721408028433367,
+      "exploit_slave": 0.1868848499144924,
+      "nash_conv": 0.43409893019882606,
+      "q_minus_p_first": -0.009911030530929565
+    },
+    {
+      "checkpoint": "lam1.0-tau1.0-seed45.pt",
+      "meta": {
+        "lambda": 1.0,
+        "tau": 1.0,
+        "seed": 45,
+        "reward_loss": -5.0,
+        "slave_lam": 1.0,
+        "alpha": 1.0,
+        "beta": 1.0,
+        "weight_mode": "off",
+        "min_ent": 0.5,
+        "swap_roles": false,
+        "shared_policy": false,
+        "same_init": false,
+        "update_order": "random",
+        "shared_trunk": false,
+        "adv_norm": false
+      },
+      "k": [
+        {
+          "k": 4,
+          "p": 0.22893035411834717,
+          "q": 0.18216119706630707
+        },
+        {
+          "k": 3,
+          "p": 0.2684769332408905,
+          "q": 0.2182217240333557
+        },
+        {
+          "k": 2,
+          "p": 0.33520758152008057,
+          "q": 0.2776142954826355
+        },
+        {
+          "k": 1,
+          "p": 0.4979918897151947,
+          "q": 0.4282987415790558
+        }
+      ],
+      "v_actual": -0.19312748239358513,
+      "br_emperor": -0.0649871962739946,
+      "br_slave": -0.373582124710083,
+      "exploit_emperor": 0.12814028611959052,
+      "exploit_slave": 0.18045464231649788,
+      "nash_conv": 0.3085949284360884,
+      "q_minus_p_first": -0.0467691570520401
+    },
+    {
+      "checkpoint": "lam1.0-tau1.0-seed46.pt",
+      "meta": {
+        "lambda": 1.0,
+        "tau": 1.0,
+        "seed": 46,
+        "reward_loss": -5.0,
+        "slave_lam": 1.0,
+        "alpha": 1.0,
+        "beta": 1.0,
+        "weight_mode": "off",
+        "min_ent": 0.5,
+        "swap_roles": false,
+        "shared_policy": false,
+        "same_init": false,
+        "update_order": "random",
+        "shared_trunk": false,
+        "adv_norm": false
+      },
+      "k": [
+        {
+          "k": 4,
+          "p": 0.23775331676006317,
+          "q": 0.17552778124809265
+        },
+        {
+          "k": 3,
+          "p": 0.2642400562763214,
+          "q": 0.2105632871389389
+        },
+        {
+          "k": 2,
+          "p": 0.3202992081642151,
+          "q": 0.28093764185905457
+        },
+        {
+          "k": 1,
+          "p": 0.48830658197402954,
+          "q": 0.45562154054641724
+        }
+      ],
+      "v_actual": -0.19360185698666688,
+      "br_emperor": -0.04162148321081549,
+      "br_slave": -0.42651990056037903,
+      "exploit_emperor": 0.15198037377585139,
+      "exploit_slave": 0.23291804357371215,
+      "nash_conv": 0.38489841734956354,
+      "q_minus_p_first": -0.06222553551197052
+    }
+  ],
+  "swapped_roles": [
+    {
+      "checkpoint": "lam1.0-tau1.0-seed42.pt",
+      "meta": {
+        "lambda": 1.0,
+        "tau": 1.0,
+        "seed": 42,
+        "reward_loss": -5.0,
+        "slave_lam": 1.0,
+        "alpha": 1.0,
+        "beta": 1.0,
+        "weight_mode": "off",
+        "min_ent": 0.5,
+        "swap_roles": false,
+        "shared_policy": false,
+        "same_init": false,
+        "update_order": "random",
+        "shared_trunk": false,
+        "adv_norm": false
+      },
+      "k": [
+        {
+          "k": 4,
+          "p": 0.1757192462682724,
+          "q": 0.17512793838977814
+        },
+        {
+          "k": 3,
+          "p": 0.21537445485591888,
+          "q": 0.21856571733951569
+        },
+        {
+          "k": 2,
+          "p": 0.29654666781425476,
+          "q": 0.2925196588039398
+        },
+        {
+          "k": 1,
+          "p": 0.527599036693573,
+          "q": 0.48315972089767456
+        }
+      ],
+      "v_actual": -0.21492580333792638,
+      "br_emperor": -0.05076763033866882,
+      "br_slave": -0.4402176815279345,
+      "exploit_emperor": 0.16415817299925756,
+      "exploit_slave": 0.22529187819000812,
+      "nash_conv": 0.3894500511892657,
+      "q_minus_p_first": -0.0005913078784942627
+    },
+    {
+      "checkpoint": "lam1.0-tau1.0-seed43.pt",
+      "meta": {
+        "lambda": 1.0,
+        "tau": 1.0,
+        "seed": 43,
+        "reward_loss": -5.0,
+        "slave_lam": 1.0,
+        "alpha": 1.0,
+        "beta": 1.0,
+        "weight_mode": "off",
+        "min_ent": 0.5,
+        "swap_roles": false,
+        "shared_policy": false,
+        "same_init": false,
+        "update_order": "random",
+        "shared_trunk": false,
+        "adv_norm": false
+      },
+      "k": [
+        {
+          "k": 4,
+          "p": 0.33298808336257935,
+          "q": 0.24155332148075104
+        },
+        {
+          "k": 3,
+          "p": 0.3648836314678192,
+          "q": 0.29676195979118347
+        },
+        {
+          "k": 2,
+          "p": 0.43006089329719543,
+          "q": 0.38493889570236206
+        },
+        {
+          "k": 1,
+          "p": 0.6022651791572571,
+          "q": 0.6229204535484314
+        }
+      ],
+      "v_actual": -0.2852865738519681,
+      "br_emperor": 0.25778470655981706,
+      "br_slave": -0.9979285001754761,
+      "exploit_emperor": 0.5430712804117852,
+      "exploit_slave": 0.712641926323508,
+      "nash_conv": 1.2557132067352932,
+      "q_minus_p_first": -0.09143476188182831
+    },
+    {
+      "checkpoint": "lam1.0-tau1.0-seed44.pt",
+      "meta": {
+        "lambda": 1.0,
+        "tau": 1.0,
+        "seed": 44,
+        "reward_loss": -5.0,
+        "slave_lam": 1.0,
+        "alpha": 1.0,
+        "beta": 1.0,
+        "weight_mode": "off",
+        "min_ent": 0.5,
+        "swap_roles": false,
+        "shared_policy": false,
+        "same_init": false,
+        "update_order": "random",
+        "shared_trunk": false,
+        "adv_norm": false
+      },
+      "k": [
+        {
+          "k": 4,
+          "p": 0.1618179827928543,
+          "q": 0.17172901332378387
+        },
+        {
+          "k": 3,
+          "p": 0.21062234044075012,
+          "q": 0.21485084295272827
+        },
+        {
+          "k": 2,
+          "p": 0.30833855271339417,
+          "q": 0.2963481545448303
+        },
+        {
+          "k": 1,
+          "p": 0.5420804619789124,
+          "q": 0.4882654547691345
+        }
+      ],
+      "v_actual": -0.21812197704145952,
+      "br_emperor": -0.030374079942703247,
+      "br_slave": -0.4884414100061891,
+      "exploit_emperor": 0.18774789709875628,
+      "exploit_slave": 0.2703194329647296,
+      "nash_conv": 0.4580673300634859,
+      "q_minus_p_first": 0.009911030530929565
+    },
+    {
+      "checkpoint": "lam1.0-tau1.0-seed45.pt",
+      "meta": {
+        "lambda": 1.0,
+        "tau": 1.0,
+        "seed": 45,
+        "reward_loss": -5.0,
+        "slave_lam": 1.0,
+        "alpha": 1.0,
+        "beta": 1.0,
+        "weight_mode": "off",
+        "min_ent": 0.5,
+        "swap_roles": false,
+        "shared_policy": false,
+        "same_init": false,
+        "update_order": "random",
+        "shared_trunk": false,
+        "adv_norm": false
+      },
+      "k": [
+        {
+          "k": 4,
+          "p": 0.18216119706630707,
+          "q": 0.22893035411834717
+        },
+        {
+          "k": 3,
+          "p": 0.2182217240333557,
+          "q": 0.2684769332408905
+        },
+        {
+          "k": 2,
+          "p": 0.2776142954826355,
+          "q": 0.33520758152008057
+        },
+        {
+          "k": 1,
+          "p": 0.4282987415790558,
+          "q": 0.4979918897151947
+        }
+      ],
+      "v_actual": -0.19312748239358513,
+      "br_emperor": -0.12042092274026317,
+      "br_slave": -0.5843125111390483,
+      "exploit_emperor": 0.07270655965332196,
+      "exploit_slave": 0.3911850287454631,
+      "nash_conv": 0.4638915883987851,
+      "q_minus_p_first": 0.0467691570520401
+    },
+    {
+      "checkpoint": "lam1.0-tau1.0-seed46.pt",
+      "meta": {
+        "lambda": 1.0,
+        "tau": 1.0,
+        "seed": 46,
+        "reward_loss": -5.0,
+        "slave_lam": 1.0,
+        "alpha": 1.0,
+        "beta": 1.0,
+        "weight_mode": "off",
+        "min_ent": 0.5,
+        "swap_roles": false,
+        "shared_policy": false,
+        "same_init": false,
+        "update_order": "random",
+        "shared_trunk": false,
+        "adv_norm": false
+      },
+      "k": [
+        {
+          "k": 4,
+          "p": 0.17552778124809265,
+          "q": 0.23775331676006317
+        },
+        {
+          "k": 3,
+          "p": 0.2105632871389389,
+          "q": 0.2642400562763214
+        },
+        {
+          "k": 2,
+          "p": 0.28093764185905457,
+          "q": 0.3202992081642151
+        },
+        {
+          "k": 1,
+          "p": 0.45562154054641724,
+          "q": 0.48830658197402954
+        }
+      ],
+      "v_actual": -0.19360185698666688,
+      "br_emperor": -0.0778015379110748,
+      "br_slave": -0.5286641584171566,
+      "exploit_emperor": 0.11580031907559207,
+      "exploit_slave": 0.33506230143048976,
+      "nash_conv": 0.45086262050608183,
+      "q_minus_p_first": 0.06222553551197052
+    }
+  ]
+}
